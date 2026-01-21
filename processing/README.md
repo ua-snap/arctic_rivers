@@ -22,8 +22,10 @@ sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/combine_netcdf.slurm
 ```
 
 Notes:
+- This should take ~5 minutes to run on the analysis node once resources are allocated.
 - SLURM logs (`.out/.err`) are written to the provided `<path/to/slurm/files>` directory.
 - The SLURM job uses the `analysis` partition by default, but this can be changed using optional params. See `generate_combine_job.py` for all optional params.
+- The SLURM job assumes you have a conda environment named `snap-geo` and activates it. Revise `generate_combine_job.py` if you would like to use a different environment. 
 
 ## Compute daily climatologies from combined files
 

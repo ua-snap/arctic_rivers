@@ -31,6 +31,19 @@ def setup_dask(workers: int, threads: int):
         return client
     return None
 
+def standardize_time_dimension(ds):
+    if "time" in ds.dims:
+        time_values = ds["time"].values
+        if np.issubdtype(time_values.dtype, np.datetime64):
+            # Normalize datetime64 to midnight (00:00:00) by casting to 'D' and back to 'ns'
+            times = time_values.astype('datetime64[D]').astype('datetime64[ns]')
+            ds = ds.assign_coords(time=times)
+            return ds
+        else:
+            raise ValueError("Time dimension is not of datetime64 type.")
+    else:
+        raise ValueError("Dataset does not contain a time dimension.")
+    
 
 def open_wt(files, chunk_time, use_parallel):
     # Group files by model/scenario
@@ -48,7 +61,8 @@ def open_wt(files, chunk_time, use_parallel):
     model_datasets = []
     for model, model_files in sorted(model_groups.items()):
         def preprocess(ds):
-            return ds[["T_stream"]].sel(no_seg=1)
+            ds = ds[["T_stream"]].sel(no_seg=1).drop_vars("no_seg")
+            return ds
         
         kwargs = {"combine": "nested", "concat_dim": "time", "parallel": use_parallel, "preprocess": preprocess}
         if chunk_time and chunk_time > 0:
@@ -61,6 +75,14 @@ def open_wt(files, chunk_time, use_parallel):
     
     # Concatenate along model dimension with outer join to handle different time ranges
     combined = xr.concat(model_datasets, dim="model", join="outer", fill_value=np.nan)
+
+    # Rename the "hru" dimension to "stream_id" and convert to integer
+    combined = combined.rename({"hru": "stream_id"})
+    combined["stream_id"] = combined["stream_id"].astype(int)
+
+    # Normalize time to midnight after concatenation
+    combined = standardize_time_dimension(combined)
+
     return combined
 
 
@@ -84,7 +106,8 @@ def open_q(files, chunk_time, use_parallel):
             if "seg" in ds.dims:
                 _, index = np.unique(ds["seg"], return_index=True)
                 ds = ds.isel(seg=index)
-            return ds[["IRFroutedRunoff"]]
+            ds = ds[["IRFroutedRunoff"]]
+            return ds
         
         kwargs = {"combine": "nested", "concat_dim": "time", "parallel": use_parallel, "preprocess": preprocess}
         if chunk_time and chunk_time > 0:
@@ -97,6 +120,14 @@ def open_q(files, chunk_time, use_parallel):
     
     # Concatenate along model dimension with outer join to handle different time ranges
     combined = xr.concat(model_datasets, dim="model", join="outer", fill_value=np.nan)
+
+    # Rename the "seg" dimension to "stream_id" and convert to integer
+    combined = combined.rename({"seg": "stream_id"})
+    combined["stream_id"] = combined["stream_id"].astype(int)
+
+    # Normalize time to midnight after concatenation
+    combined = standardize_time_dimension(combined)
+
     return combined
 
 
