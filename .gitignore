@@ -65,9 +65,6 @@ npm-debug.log*
 dist/
 build/
 
-# Optional: large data and outputs
-# Uncomment to ignore datasets and generated outputs
-#data/
-#output/
-#*.csv
-#*.parquet
+# Slurm outputs
+*.err
+*.out
