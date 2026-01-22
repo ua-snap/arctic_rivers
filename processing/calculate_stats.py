@@ -53,6 +53,9 @@ def calculate_statistics(ds):
     # Group by month and era, compute statistics
     # This preserves stream_id and model dimensions automatically
     monthly_mean = ds.groupby(["month", "era"]).mean(dim="time", skipna=True)
+
+    # Round to 3 decimal places
+    monthly_mean = monthly_mean.round(3)
     
     # Get the original variable name
     orig_var = list(ds.data_vars)[0]

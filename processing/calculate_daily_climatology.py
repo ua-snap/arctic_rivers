@@ -54,6 +54,11 @@ def calculate_daily_climatology(ds):
     daily_mean = ds.groupby(["dayofyear", "era"]).mean(dim="time", skipna=True)
     daily_max = ds.groupby(["dayofyear", "era"]).max(dim="time", skipna=True)
 
+    # Round stats to 3 decimal places
+    daily_min = daily_min.round(3)
+    daily_mean = daily_mean.round(3)
+    daily_max = daily_max.round(3)
+
     # Rename dayofyear to doy
     daily_min = daily_min.rename({"dayofyear": "doy"})
     daily_mean = daily_mean.rename({"dayofyear": "doy"})
