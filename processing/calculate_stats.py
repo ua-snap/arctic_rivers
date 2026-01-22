@@ -75,9 +75,12 @@ def calculate_statistics(ds):
         # Extract data for this specific month and drop month coordinate
         month_data = monthly_mean[orig_var].sel(month=month_num).drop_vars("month")
         
+        # Clear existing attributes and set new ones
+        month_data.attrs = {}
+        
         # Create new variable (dimensions: model, stream_id, era)
         result_ds[stat_var_name] = month_data
-        # Set only description and units, remove long_name and coordinates
+        # Set only description and units
         result_ds[stat_var_name].attrs = {
             "description": description,
             "units": units
