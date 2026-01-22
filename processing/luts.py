@@ -31,42 +31,6 @@ stat_var_dict = {
     }
 
 
-# encodings for netCDF, integers required for rasdaman ingest
-encodings_lookup = {
-    "model": {
-        "C2LE2": 0,
-        "C2LE4": 1,
-        "C2LE7": 2,
-        "C2LE9": 3,
-        "historical": 4,
-        "PGWh": 5,
-        "PGWm": 6,
-    },
-    "era": {
-        "1990_2021": 0,
-        "2034_2065": 1,
-    },
-}
-        
-
-# reverse encodings for netCDF attributes
-reverse_encodings_lookup = {
-   
-    "model": {
-        0: "C2LE2",
-        1: "C2LE4",
-        2: "C2LE7",
-        3: "C2LE9",
-        4: "historical",
-        5: "PGWh",
-        6: "PGWm",
-    },
-    "era": {
-        0: "1990_2021",
-        1: "2034_2065",
-    },
-}
-
 # information about the dataset itself
 data_source_dict = {"Title":"Alaskan river discharge, temperature, and climate data for a climate reference (1990-2021) and at mid-century (2034-2065)",
                     "URL":"https://doi.org/10.18739/A25M62870",
