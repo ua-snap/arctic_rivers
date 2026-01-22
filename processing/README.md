@@ -1,6 +1,6 @@
 ## Combine NCAR hydrology data
 
-Combine all NetCDFs from the Arctic Rivers dataset into two outputs: one for daily stream temperature, and one for daily streamflow.
+Combine all NetCDFs from the Arctic Rivers dataset into two outputs: one for daily stream temperature, and one for daily streamflow. Streamflow is converted from cubic meters per second (cms) to cubic feet per second (cfs) to match other hydrology coverages.
 
 Main scripts:
 - [processing/generate_combine_job.py](processing/generate_combine_job.py): writes a `.slurm` file to submit
