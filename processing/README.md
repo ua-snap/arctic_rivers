@@ -21,12 +21,33 @@ python generate_combine_job.py /import/home/jdpaul3/arctic_rivers/processing/com
 sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/combine_netcdf.slurm
 ```
 
-Notes:
-- This should take ~5 minutes to run on the analysis node once resources are allocated.
-- SLURM logs (`.out/.err`) are written to the provided `<path/to/slurm/files>` directory.
-- The SLURM job uses the `analysis` partition by default, but this can be changed using optional params. See `generate_combine_job.py` for all optional params.
-- The SLURM job assumes you have a conda environment named `snap-geo` and activates it. Revise `generate_combine_job.py` if you would like to use a different environment. 
 
 ## Compute daily climatologies from combined files
 
-TBD
+Calculate daily climatologies (min/mean/max) for each day of year, era (1990-2021 and 2034-2065), model, and stream_id from the combined dataset.
+
+Main scripts:
+- [processing/generate_climatology_job.py](processing/generate_climatology_job.py): writes a `.slurm` file to submit
+- [processing/calculate_daily_climatology.py](processing/calculate_daily_climatology.py): does the climatology calculation work
+
+Usage:
+```bash
+python generate_climatology_job.py <processing_script> <path/to/combined/wt/file> <path/to/combined/q/file> <path/to/output/wt/climatology/file> <path/to/output/q/climatology/file> <path/to/slurm/files>
+
+sbatch <path/to/slurm/files>/daily_climatology.slurm
+```
+
+Example (use your own directories for outputs):
+
+```bash
+python generate_climatology_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_daily_climatology.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/wt_daily_clim.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/q_daily_clim.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
+
+sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/daily_climatology.slurm
+```
+
+## Notes:
+Notes:
+- Each job take 5-10 minutes to run on the `analysis` partition once resources are allocated.
+- The SLURM jobs use the `analysis` partition by default, but this can be changed using optional params in the `generate_*.py` scripts.
+- The SLURM jobs assume you have a conda environment named `snap-geo`. Revise `generate_*.py` scripts if you would like to use a different environment. 
+- SLURM logs (`.out/.err`) are written to the provided `<path/to/slurm/files>` directory.
