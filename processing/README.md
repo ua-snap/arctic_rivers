@@ -68,6 +68,29 @@ python generate_stats_job.py /import/home/jdpaul3/arctic_rivers/processing/calcu
 sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/hydro_statistics.slurm
 ```
 
+## Prep for Rasdaman ingestion
+
+Convert string dimensions to integers and add encoding dictionaries to dimension metadata. Convert all variables to `float32` data type.
+
+Main scripts:
+- [processing/generate_rasdaman_job.py](processing/generate_rasdaman_job.py): writes a `.slurm` file to submit
+- [processing/prep_for_rasdaman.py](processing/prep_for_rasdaman.py): does the Rasdaman prep work
+
+Usage:
+```bash
+python python generate_rasdaman_job.py <processing_script> <path/to/climatology/or/stats/file> <path/to/rasdaman-ready/climatology/or/stats/file> <path/to/output/q/stats/file>
+
+sbatch <path/to/slurm/files>/rasdaman_prep.slurm
+```
+
+Example (use your own directories for outputs):
+
+```bash
+python python generate_rasdaman_job.py /import/home/jdpaul3/arctic_rivers/processing/prep_for_rasdaman.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_wt_for_rasdaman.nc
+
+sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/rasdaman_prep.slurm
+```
+
 
 ## Notes:
 Notes:
