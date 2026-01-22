@@ -65,11 +65,6 @@ def convert_string_dimensions(ds, string_dims):
     # Create a copy of the dataset to modify
     ds_converted = ds.copy()
 
-    # Convert all vars to float32
-    print("\nConverting all variable data to float32")
-    for var in ds_converted.data_vars:
-        ds_converted = convert_variable_dtype(ds_converted, var, dtype=np.float32)
-
     # Convert specified string dimensions and populate encoding mappings
     print(f"Converting string dimensions: {string_dims}")
     for dim_name in string_dims:
@@ -109,7 +104,7 @@ def convert_string_dimensions(ds, string_dims):
 
 def verify_conversion(original_ds, converted_ds, string_dims):
     """Verify that the conversion was successful."""
-    print("Verifying conversion results...")
+    print("\nVerifying conversion results...")
     
     for dim_name in string_dims:
         if dim_name not in original_ds.coords:
@@ -217,7 +212,7 @@ def main():
         sys.exit(1)
     
     # Convert string dimensions
-    print("Converting string dimensions to integers...")
+    print("\nConverting string dimensions to integers...")
     try:
         ds_converted = convert_string_dimensions(ds, args.string_dims)
     except Exception as e:

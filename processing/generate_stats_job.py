@@ -5,9 +5,7 @@ Generate a SLURM .slurm job for calculating hydrological statistics from combine
 Usage:
   python generate_stats_job.py \
     /path/to/calculate_stats.py \
-    /path/to/combined_wt.nc \
     /path/to/combined_q.nc \
-    /path/to/wt_stats_output.nc \
     /path/to/q_stats_output.nc \
     /path/to/slurm/scripts \
     --conda-env "snap-geo" \
@@ -23,7 +21,7 @@ Usage:
 This writes a .slurm file into the specified scripts directory, which you can submit with sbatch.
 
 Example submission:
-    sbatch /path/to/slurm/scripts/hydro_statistics.slurm
+    sbatch /path/to/slurm/scripts/streamflow_stats.slurm
 
 """
 import argparse
@@ -32,13 +30,11 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser(description="Generate hydrological statistics .slurm job file")
     parser.add_argument("stats_script", help="Path to the calculate_stats.py script")
-    parser.add_argument("wt_input_nc", help="Path to combined WT input .nc file")
     parser.add_argument("q_input_nc", help="Path to combined Q input .nc file")
-    parser.add_argument("wt_output_nc", help="Path to WT statistics output .nc file")
     parser.add_argument("q_output_nc", help="Path to Q statistics output .nc file")
     parser.add_argument("slurm_dir", help="Directory to write the .slurm job file")
     parser.add_argument("--conda-env", default="snap-geo", help="Conda environment name to activate")
-    parser.add_argument("--job-name", default="hydro_statistics")
+    parser.add_argument("--job-name", default="streamflow_stats")
     parser.add_argument("--partition", default="analysis")
     parser.add_argument("--memory", default="750G")
     parser.add_argument("--cpus", type=int, default=28)
@@ -52,17 +48,14 @@ def main():
     slurm_dir.mkdir(parents=True, exist_ok=True)
     slurm_path = slurm_dir / f"{args.job_name}.slurm"
 
-    wt_output_dir = Path(args.wt_output_nc).parent
-    wt_output_dir.mkdir(parents=True, exist_ok=True)
-
     q_output_dir = Path(args.q_output_nc).parent
     q_output_dir.mkdir(parents=True, exist_ok=True)
 
 
     # Build statistics command
     stats_cmd = (
-        f"python {args.stats_script} --wt {args.wt_input_nc} --q {args.q_input_nc} "
-        f"--wt-output {args.wt_output_nc} --q-output {args.q_output_nc} "
+        f"python {args.stats_script} --q {args.q_input_nc} "
+        f"--q-output {args.q_output_nc} "
         f"--workers {args.workers} --threads-per-worker {args.threads_per_worker}"
     )
     if args.chunk_time > 0:

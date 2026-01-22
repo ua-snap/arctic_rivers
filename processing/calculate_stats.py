@@ -16,9 +16,7 @@ except Exception:
 
 def parse_args():
     p = argparse.ArgumentParser(description="Calculate Hydrological Statistics from combined Arctic Rivers NetCDF files")
-    p.add_argument("--wt", required=True, help="Combined WT NetCDF file path")
     p.add_argument("--q", required=True, help="Combined Q NetCDF file path")
-    p.add_argument("--wt-output", required=True, help="Output WT statistics NetCDF file path")
     p.add_argument("--q-output", required=True, help="Output Q statistics NetCDF file path")
     p.add_argument("--workers", type=int, default=0, help="Number of Dask workers (0 disables Dask)")
     p.add_argument("--threads-per-worker", type=int, default=1, help="Threads per Dask worker")
@@ -72,6 +70,7 @@ def calculate_statistics(ds):
     for stat_var_name, info in stat_var_dict.items():
         month_num = info["month"]
         description = info["description"]
+        units = info["units"]
         
         # Extract data for this specific month and drop month coordinate
         month_data = monthly_mean[orig_var].sel(month=month_num).drop_vars("month")
@@ -81,15 +80,16 @@ def calculate_statistics(ds):
         # Set only description and units, remove long_name and coordinates
         result_ds[stat_var_name].attrs = {
             "description": description,
-            "units": ds[orig_var].attrs.get("units", "")
+            "units": units
         }
     
     return result_ds
 
 
 def add_metadata(ds):
-    ds.attrs["Data_Source"] = data_source_dict
-    ds.attrs["GCM_Metadata"] = gcm_metadata_dict
+    # these must be strings to be netCDF serializable
+    ds.attrs["Data_Source"] = str(data_source_dict)
+    ds.attrs["GCM_Metadata"] = str(gcm_metadata_dict)
     return ds
 
 
@@ -99,24 +99,19 @@ def main():
     args = parse_args()
     client = setup_dask(args.workers, args.threads_per_worker)
 
-    print("Loading datasets...")
-    wt_ds = xr.open_dataset(args.wt, chunks={"time": args.chunk_time} if args.chunk_time > 0 else None)
+    print("Loading dataset...")
     q_ds = xr.open_dataset(args.q, chunks={"time": args.chunk_time} if args.chunk_time > 0 else None)
 
     print("Assigning era coordinate...")
-    wt_ds = assign_era(wt_ds)
     q_ds = assign_era(q_ds)
 
     print("Calculating statistics...")
-    wt_stats = calculate_statistics(wt_ds)
     q_stats = calculate_statistics(q_ds)
 
     print("Adding metadata...")
-    wt_stats = add_metadata(wt_stats)
     q_stats = add_metadata(q_stats)
 
-    wt_stats.to_netcdf(args.wt_output)
-    print("WT statistics saved to", args.wt_output)
+    print("Saving Q statistics to NetCDF...")
     q_stats.to_netcdf(args.q_output)
     print("Q statistics saved to", args.q_output)
 

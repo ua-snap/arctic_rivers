@@ -66,5 +66,7 @@ dist/
 build/
 
 # Slurm outputs
+/slurm/
+*.slurm
 *.err
 *.out

@@ -1,15 +1,19 @@
-## Combine NCAR hydrology data
+# NCAR "Arctic Rivers" Data Processing Pipeline
 
-Combine all NetCDFs from the Arctic Rivers dataset into two outputs: one for daily stream temperature, and one for daily streamflow. Streamflow is converted from cubic meters per second (cms) to cubic feet per second (cfs) to match other hydrology coverages.
+## 1. Combine hydrology outputs
 
-Main scripts:
+Combine all NetCDFs from the Arctic Rivers dataset into two outputs: one for daily stream temperature (`WT`), and one for daily streamflow (`Q`). Streamflow is converted from cubic meters per second (cms) to cubic feet per second (cfs) to match other hydrology coverages. Source data lives here at `/import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data`
+
+#### Main scripts:
 - [processing/generate_combine_job.py](processing/generate_combine_job.py): writes a `.slurm` file to submit
 - [processing/combine_arctic_rivers.py](processing/combine_arctic_rivers.py): does the combination work
 
-Usage:
+#### Usage:
+
 ```bash
 python generate_combine_job.py <processing_script> <path/to/source/data> <path/to/output/wt/file> <path/to/output/q/file> <path/to/slurm/files>
-
+```
+```bash
 sbatch <path/to/slurm/files>/combine_netcdf.slurm
 ```
 
@@ -17,23 +21,26 @@ Example (use your own directories for outputs):
 
 ```bash
 python generate_combine_job.py /import/home/jdpaul3/arctic_rivers/processing/combine_arctic_rivers.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
-
+```
+```bash
 sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/combine_netcdf.slurm
 ```
 
 
-## Compute daily climatologies from combined files
+## 2. Compute daily climatologies from combined files
 
-Calculate daily climatologies (min/mean/max) for each day of year, era (1990-2021 and 2034-2065), model, and stream_id from the combined dataset.
+Calculate daily climatologies (min/mean/max) for each day of year, era (1990-2021 and 2034-2065), model, and stream_id from the combined dataset. The script calculates daily climatologies for both streamflow and temperature.
 
-Main scripts:
+#### Main scripts:
 - [processing/generate_climatology_job.py](processing/generate_climatology_job.py): writes a `.slurm` file to submit
 - [processing/calculate_daily_climatology.py](processing/calculate_daily_climatology.py): does the climatology calculation work
 
-Usage:
+#### Usage:
+
 ```bash
 python generate_climatology_job.py <processing_script> <path/to/combined/wt/file> <path/to/combined/q/file> <path/to/output/wt/climatology/file> <path/to/output/q/climatology/file> <path/to/slurm/files>
-
+```
+```bash
 sbatch <path/to/slurm/files>/daily_climatology.slurm
 ```
 
@@ -41,60 +48,72 @@ Example (use your own directories for outputs):
 
 ```bash
 python generate_climatology_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_daily_climatology.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
-
+```
+```bash
 sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/daily_climatology.slurm
 ```
 
-## Compute hydrological statistics from combined files
+## 3. Compute streamflow statistics from combined files
 
-Calculate hydrological stats (monthly means) for each era (1990-2021 and 2034-2065), model, and stream_id from the combined dataset.
+Calculate streamflow stats (monthly means) for each era (1990-2021 and 2034-2065), model, and stream_id from the combined dataset. Not calculated for stream temperature at this time.
 
-Main scripts:
+#### Main scripts:
 - [processing/generate_stats_job.py](processing/generate_stats_job.py): writes a `.slurm` file to submit
 - [processing/calculate_stats.py](processing/calculate_stats.py): does the stats calculation work
 
-Usage:
-```bash
-python generate_stats_job.py <processing_script> <path/to/combined/wt/file> <path/to/combined/q/file> <path/to/output/wt/stats/file> <path/to/output/q/stats/file> <path/to/slurm/files>
+#### Usage:
 
-sbatch <path/to/slurm/files>/hydro_statistics.slurm
+```bash
+python generate_stats_job.py <processing_script> <path/to/combined/q/file> <path/to/output/q/stats/file> <path/to/slurm/files>
+```
+```bash
+sbatch <path/to/slurm/files>/streamflow_stats.slurm
 ```
 
 Example (use your own directories for outputs):
 
 ```bash
-python generate_stats_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_stats.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
-
-sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/hydro_statistics.slurm
+python generate_stats_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_stats.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
+```
+```bash
+sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/streamflow_stats.slurm
 ```
 
-## Prep for Rasdaman ingestion
+## 4. Prep for Rasdaman ingestion
 
-Convert string dimensions to integers and add encoding dictionaries to dimension metadata. Convert all variables to `float32` data type.
+Convert string dimensions to integers and add encoding dictionaries to dimension metadata. Convert all variables to `float32` data type. Run twice: once for streamflow statistics and once for streamflow climatology (temperature is not needed for Rasdaman ingest at this time). Change the slurm job name when calling `generate_rasdaman_job.py` in order to create two individually named slurm job scripts to submit. 
 
-Main scripts:
+#### Main scripts:
 - [processing/generate_rasdaman_job.py](processing/generate_rasdaman_job.py): writes a `.slurm` file to submit
 - [processing/prep_for_rasdaman.py](processing/prep_for_rasdaman.py): does the Rasdaman prep work
 
-Usage:
-```bash
-python python generate_rasdaman_job.py <processing_script> <path/to/climatology/or/stats/file> <path/to/rasdaman-ready/climatology/or/stats/file> <path/to/output/q/stats/file>
+#### Usage:
 
+```bash
+python generate_rasdaman_job.py <processing_script> <path/to/input/file> <path/to/output/file> <path/to/slurm/files>
+```
+```bash
 sbatch <path/to/slurm/files>/rasdaman_prep.slurm
 ```
 
 Example (use your own directories for outputs):
 
 ```bash
-python python generate_rasdaman_job.py /import/home/jdpaul3/arctic_rivers/processing/prep_for_rasdaman.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_wt_for_rasdaman.nc
-
-sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/rasdaman_prep.slurm
+python generate_rasdaman_job.py /import/home/jdpaul3/arctic_rivers/processing/prep_for_rasdaman.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_q_for_rasdaman.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/ --job-name "rasdaman_stats_prep"
+```
+```bash
+sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/rasdaman_stats_prep.slurm
+```
+```bash
+python generate_rasdaman_job.py /import/home/jdpaul3/arctic_rivers/processing/prep_for_rasdaman.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_q_for_rasdaman.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/ --job-name "rasdaman_daily_clim_prep"
+```
+```bash
+sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/rasdaman_daily_clim_prep.slurm
 ```
 
 
 ## Notes:
-Notes:
-- Each job take 5-10 minutes to run on the `analysis` partition once resources are allocated.
+- Each job take < 5 minutes to run on the `analysis` partition once resources are allocated.
 - The SLURM jobs use the `analysis` partition by default, but this can be changed using optional params in the `generate_*.py` scripts.
 - The SLURM jobs assume you have a conda environment named `snap-geo`. Revise `generate_*.py` scripts if you would like to use a different environment. 
-- SLURM logs (`.out/.err`) are written to the provided `<path/to/slurm/files>` directory.
+- SLURM logs (`*.out` and `*.err`) are written to the provided `<path/to/slurm/files>` directory. Consult these first when troubleshooting. 

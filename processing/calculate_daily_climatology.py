@@ -79,8 +79,9 @@ def add_metadata(ds):
         if var_name in ds:
             ds[var_name].attrs["description"] = info["description"]
             ds[var_name].attrs["units"] = info["units"]
-    ds.attrs["Data_Source"] = data_source_dict
-    ds.attrs["GCM_Metadata"] = gcm_metadata_dict
+    # these must be strings to be netCDF serializable        
+    ds.attrs["Data_Source"] = str(data_source_dict)
+    ds.attrs["GCM_Metadata"] = str(gcm_metadata_dict)
     return ds
 
 
