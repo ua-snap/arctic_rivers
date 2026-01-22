@@ -40,10 +40,34 @@ sbatch <path/to/slurm/files>/daily_climatology.slurm
 Example (use your own directories for outputs):
 
 ```bash
-python generate_climatology_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_daily_climatology.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/wt_daily_clim.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/q_daily_clim.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
+python generate_climatology_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_daily_climatology.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
 
 sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/daily_climatology.slurm
 ```
+
+## Compute hydrological statistics from combined files
+
+Calculate hydrological stats (monthly means) for each era (1990-2021 and 2034-2065), model, and stream_id from the combined dataset.
+
+Main scripts:
+- [processing/generate_stats_job.py](processing/generate_stats_job.py): writes a `.slurm` file to submit
+- [processing/calculate_stats.py](processing/calculate_stats.py): does the stats calculation work
+
+Usage:
+```bash
+python generate_stats_job.py <processing_script> <path/to/combined/wt/file> <path/to/combined/q/file> <path/to/output/wt/stats/file> <path/to/output/q/stats/file> <path/to/slurm/files>
+
+sbatch <path/to/slurm/files>/hydro_statistics.slurm
+```
+
+Example (use your own directories for outputs):
+
+```bash
+python generate_stats_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_stats.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
+
+sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/hydro_statistics.slurm
+```
+
 
 ## Notes:
 Notes:
