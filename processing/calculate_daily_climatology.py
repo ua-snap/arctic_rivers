@@ -5,6 +5,8 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 import dask
+from luts import clim_var_dict, data_source_dict, gcm_metadata_dict
+
 
 try:
     from dask.distributed import Client, LocalCluster
@@ -41,6 +43,7 @@ def assign_era(ds):
     ds = ds.assign_coords(era=("time", eras))
     return ds
 
+
 def calculate_daily_climatology(ds):
     # Add dayofyear as a coordinate
     ds = ds.assign_coords(dayofyear=("time", ds["time"].dt.dayofyear.values))
@@ -63,8 +66,18 @@ def calculate_daily_climatology(ds):
         "doy_mean": daily_mean[var_name],
         "doy_max": daily_max[var_name]
     })
-    
     return result
+
+
+def add_metadata(ds):
+    for var_name, info in clim_var_dict.items():
+        if var_name in ds:
+            ds[var_name].attrs["description"] = info["description"]
+            ds[var_name].attrs["units"] = info["units"]
+    ds.attrs["Data_Source"] = data_source_dict
+    ds.attrs["GCM_Metadata"] = gcm_metadata_dict
+    return ds
+
 
 def main():
     # Suppress dask chunking warnings
@@ -83,6 +96,10 @@ def main():
     print("Calculating daily climatologies...")
     wt_daily_clim = calculate_daily_climatology(wt_ds)
     q_daily_clim = calculate_daily_climatology(q_ds)
+
+    print("Adding metadata...")
+    wt_daily_clim = add_metadata(wt_daily_clim)
+    q_daily_clim = add_metadata(q_daily_clim)
 
     wt_daily_clim.to_netcdf(args.wt_output)
     print("WT daily climatology saved to", args.wt_output)

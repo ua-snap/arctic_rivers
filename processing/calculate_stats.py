@@ -5,7 +5,8 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 import dask
-from luts import stat_var_dict
+from luts import stat_var_dict, data_source_dict, gcm_metadata_dict
+
 
 try:
     from dask.distributed import Client, LocalCluster
@@ -83,6 +84,12 @@ def calculate_statistics(ds):
     return result_ds
 
 
+def add_metadata(ds):
+    ds.attrs["Data_Source"] = data_source_dict
+    ds.attrs["GCM_Metadata"] = gcm_metadata_dict
+    return ds
+
+
 def main():
     # Suppress dask chunking warnings
     dask.config.set({"array.slicing.split_large_chunks": False})
@@ -100,6 +107,10 @@ def main():
     print("Calculating statistics...")
     wt_stats = calculate_statistics(wt_ds)
     q_stats = calculate_statistics(q_ds)
+
+    print("Adding metadata...")
+    wt_stats = add_metadata(wt_stats)
+    q_stats = add_metadata(q_stats)
 
     wt_stats.to_netcdf(args.wt_output)
     print("WT statistics saved to", args.wt_output)
