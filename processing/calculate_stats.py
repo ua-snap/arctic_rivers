@@ -13,18 +13,18 @@ except Exception:
     LocalCluster = None
 
 stat_var_dict = {
-        "ma12": {"month": 1, "description": "Mean of monthly flow values for January.", "units": "m3/s"},
-        "ma13": {"month": 2, "description": "Mean of monthly flow values for February.", "units": "m3/s"},
-        "ma14": {"month": 3, "description": "Mean of monthly flow values for March.", "units": "m3/s"},
-        "ma15": {"month": 4, "description": "Mean of monthly flow values for April.", "units": "m3/s"},
-        "ma16": {"month": 5, "description": "Mean of monthly flow values for May.", "units": "m3/s"},
-        "ma17": {"month": 6, "description": "Mean of monthly flow values for June.", "units": "m3/s"},
-        "ma18": {"month": 7, "description": "Mean of monthly flow values for July.", "units": "m3/s"},
-        "ma19": {"month": 8, "description": "Mean of monthly flow values for August.", "units": "m3/s"},
-        "ma20": {"month": 9, "description": "Mean of monthly flow values for September.", "units": "m3/s"},
-        "ma21": {"month": 10, "description": "Mean of monthly flow values for October.", "units": "m3/s"},
-        "ma22": {"month": 11, "description": "Mean of monthly flow values for November.", "units": "m3/s"},
-        "ma23": {"month": 12, "description": "Mean of monthly flow values for December.", "units": "m3/s"},
+        "ma12": {"month": 1, "description": "Mean of monthly flow values for January.", "units": "cfs"},
+        "ma13": {"month": 2, "description": "Mean of monthly flow values for February.", "units": "cfs"},
+        "ma14": {"month": 3, "description": "Mean of monthly flow values for March.", "units": "cfs"},
+        "ma15": {"month": 4, "description": "Mean of monthly flow values for April.", "units": "cfs"},
+        "ma16": {"month": 5, "description": "Mean of monthly flow values for May.", "units": "cfs"},
+        "ma17": {"month": 6, "description": "Mean of monthly flow values for June.", "units": "cfs"},
+        "ma18": {"month": 7, "description": "Mean of monthly flow values for July.", "units": "cfs"},
+        "ma19": {"month": 8, "description": "Mean of monthly flow values for August.", "units": "cfs"},
+        "ma20": {"month": 9, "description": "Mean of monthly flow values for September.", "units": "cfs"},
+        "ma21": {"month": 10, "description": "Mean of monthly flow values for October.", "units": "cfs"},
+        "ma22": {"month": 11, "description": "Mean of monthly flow values for November.", "units": "cfs"},
+        "ma23": {"month": 12, "description": "Mean of monthly flow values for December.", "units": "cfs"},
     }
 
 def parse_args():

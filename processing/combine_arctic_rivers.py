@@ -43,6 +43,16 @@ def standardize_time_dimension(ds):
             raise ValueError("Time dimension is not of datetime64 type.")
     else:
         raise ValueError("Dataset does not contain a time dimension.")
+
+
+def convert_cms_to_cfs(ds, var_name):
+    # Conversion factor from cubic meters per second to cubic feet per second
+    conversion_factor = 35.3147
+    ds[var_name] = ds[var_name] * conversion_factor
+    # Update units attribute if it exists
+    if "units" in ds[var_name].attrs:
+        ds[var_name].attrs["units"] = "cfs"
+    return ds
     
 
 def open_wt(files, chunk_time, use_parallel):
@@ -127,6 +137,9 @@ def open_q(files, chunk_time, use_parallel):
 
     # Normalize time to midnight after concatenation
     combined = standardize_time_dimension(combined)
+
+    # Convert from cms to cfs
+    combined = convert_cms_to_cfs(combined, "IRFroutedRunoff")
 
     return combined
 
