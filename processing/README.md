@@ -20,10 +20,10 @@ sbatch <path/to/slurm/files>/combine_netcdf.slurm
 Example (use your own directories for outputs):
 
 ```bash
-python generate_combine_job.py /import/home/jdpaul3/arctic_rivers/processing/combine_arctic_rivers.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
+python generate_combine_job.py combine_arctic_rivers.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data /import/beegfs/CMIP6/jdpaul3/arctic_rivers/combined_wt.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/combined_q.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/
 ```
 ```bash
-sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/combine_netcdf.slurm
+sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/combine_netcdf.slurm
 ```
 
 
@@ -47,10 +47,10 @@ sbatch <path/to/slurm/files>/daily_climatology.slurm
 Example (use your own directories for outputs):
 
 ```bash
-python generate_climatology_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_daily_climatology.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_wt.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
+python generate_climatology_job.py calculate_daily_climatology.py /import/beegfs/CMIP6/jdpaul3/arctic_rivers/combined_wt.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/combined_q.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/daily_clim_wt.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/daily_clim_q.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/
 ```
 ```bash
-sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/daily_climatology.slurm
+sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/daily_climatology.slurm
 ```
 
 ## 3. Compute streamflow statistics from combined files
@@ -73,10 +73,10 @@ sbatch <path/to/slurm/files>/streamflow_stats.slurm
 Example (use your own directories for outputs):
 
 ```bash
-python generate_stats_job.py /import/home/jdpaul3/arctic_rivers/processing/calculate_stats.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/combined_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_q.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/
+python generate_stats_job.py calculate_stats.py /import/beegfs/CMIP6/jdpaul3/arctic_rivers/combined_q.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/stats_q.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/
 ```
 ```bash
-sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/streamflow_stats.slurm
+sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/streamflow_stats.slurm
 ```
 
 ## 4. Prep for Rasdaman ingestion
@@ -99,16 +99,16 @@ sbatch <path/to/slurm/files>/rasdaman_prep.slurm
 Example (use your own directories for outputs):
 
 ```bash
-python generate_rasdaman_job.py /import/home/jdpaul3/arctic_rivers/processing/prep_for_rasdaman.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/stats_q_for_rasdaman.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/ --job-name "rasdaman_stats_prep"
+python generate_rasdaman_job.py prep_for_rasdaman.py /import/beegfs/CMIP6/jdpaul3/arctic_rivers/stats_q.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/stats_q_for_rasdaman.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/ --job-name "rasdaman_stats_prep"
 ```
 ```bash
-sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/rasdaman_stats_prep.slurm
+sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/rasdaman_stats_prep.slurm
 ```
 ```bash
-python generate_rasdaman_job.py /import/home/jdpaul3/arctic_rivers/processing/prep_for_rasdaman.py /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_q.nc /import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/daily_clim_q_for_rasdaman.nc /import/home/jdpaul3/arctic_rivers/processing/slurm/ --job-name "rasdaman_daily_clim_prep"
+python generate_rasdaman_job.py prep_for_rasdaman.py /import/beegfs/CMIP6/jdpaul3/arctic_rivers/daily_clim_q.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/daily_clim_q_for_rasdaman.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/ --job-name "rasdaman_daily_clim_prep"
 ```
 ```bash
-sbatch /import/home/jdpaul3/arctic_rivers/processing/slurm/rasdaman_daily_clim_prep.slurm
+sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/rasdaman_daily_clim_prep.slurm
 ```
 
 
