@@ -50,7 +50,13 @@ def calculate_statistics(ds):
     
     # Group by month and era, compute statistics
     # This preserves stream_id and model dimensions automatically
+    # Count non-NaN values to identify all-NaN groups
+    count = ds.groupby(["month", "era"]).count(dim="time")
     monthly_mean = ds.groupby(["month", "era"]).mean(dim="time", skipna=True)
+    
+    # Replace 0's with NaN where all values were NaN (count == 0)
+    orig_var = list(ds.data_vars)[0]
+    monthly_mean[orig_var] = monthly_mean[orig_var].where(count[orig_var] > 0)
 
     # Round to 3 decimal places
     monthly_mean = monthly_mean.round(3)

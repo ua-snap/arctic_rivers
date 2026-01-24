@@ -50,9 +50,19 @@ def calculate_daily_climatology(ds):
     
     # Group by dayofyear and era, compute statistics
     # This preserves stream_id and model dimensions automatically
+    # Count non-NaN values to identify all-NaN groups
+    count = ds.groupby(["dayofyear", "era"]).count(dim="time")
     daily_min = ds.groupby(["dayofyear", "era"]).min(dim="time", skipna=True)
     daily_mean = ds.groupby(["dayofyear", "era"]).mean(dim="time", skipna=True)
     daily_max = ds.groupby(["dayofyear", "era"]).max(dim="time", skipna=True)
+    
+    # Get the main variable name
+    var_name = list(ds.data_vars)[0]
+    
+    # Replace with NaN where all values were NaN (count == 0)
+    daily_min[var_name] = daily_min[var_name].where(count[var_name] > 0)
+    daily_mean[var_name] = daily_mean[var_name].where(count[var_name] > 0)
+    daily_max[var_name] = daily_max[var_name].where(count[var_name] > 0)
 
     # Round stats to 3 decimal places
     daily_min = daily_min.round(3)
