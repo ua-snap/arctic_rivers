@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import sys
-from pathlib import Path
 import numpy as np
 import xarray as xr
 import dask
