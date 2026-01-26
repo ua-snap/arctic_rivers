@@ -3,21 +3,7 @@
 Generate a SLURM .slurm job for combining Arctic Rivers NetCDF files.
 
 Usage:
-  python generate_combine_job.py \
-    /path/to/combine/script \
-    /path/to/netcdf/files \
-    /path/to/combined_wt_output.nc \
-    /path/to/combined_q_output.nc \
-    /path/to/slurm/scripts \
-    --conda-env "snap-geo" \
-    --job-name "combine_netcdf" \
-    --partition "analysis" \
-    --memory "750G" \
-    --cpus 28 \
-    --workers 6 \
-    --threads-per-worker 4
-    --chunk-time 365 \
-    --time "12:00:00"
+  python generate_combine_job.py /path/to/combine/script /path/to/netcdf/files /path/to/combined_wt_output.nc /path/to/combined_q_output.nc /path/to/slurm/scripts --conda-env "snap-geo" --job-name "combine_netcdf" --partition "analysis" --memory "750G" --cpus 28 --workers 6 --threads-per-worker 4 --chunk-time 365 --time "12:00:00"
 
 This writes a .slurm file into the specified scripts directory, which you can submit with sbatch.
 
