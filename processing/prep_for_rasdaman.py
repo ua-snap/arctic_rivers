@@ -16,6 +16,7 @@ import argparse
 from pathlib import Path
 import xarray as xr
 import numpy as np
+import ast
 
 
 def parse_arguments():
@@ -120,7 +121,7 @@ def verify_conversion(original_ds, converted_ds, string_dims):
         # Get encoding string and evaluate it back to dict
         encoding_str = converted_ds[dim_name].attrs['encoding']
         try:
-            encoding_map = eval(encoding_str)
+            encoding_map = ast.literal_eval(encoding_str)
         except Exception as e:
             print(f"  ERROR: Could not parse encoding string: {e}")
             continue
