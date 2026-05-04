@@ -38,7 +38,7 @@ def parse_arguments():
     parser.add_argument(
         "--string-dims",
         nargs="*",
-        default=["model", "era"],
+        default=["model", "era", "source"],
         help="List of string dimensions to convert to integers"
     )
     return parser.parse_args()

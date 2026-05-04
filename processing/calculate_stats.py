@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import numpy as np
+import pandas as pd
 import xarray as xr
 import dask
 from luts import stat_var_dict, data_source_dict, gcm_metadata_dict
@@ -96,6 +97,43 @@ def calculate_statistics(ds):
     return result_ds
 
 
+def add_source_dimension(result_ds):
+    excluded_models = ['historical', 'PGWh', 'PGWm']
+    source_index = pd.Index(['original_gcm', 'gcm_diff', 'gcm_diff_applied_to_cheng'], name='source')
+
+    new_vars = {}
+    for var_name in stat_var_dict.keys():
+        da = result_ds[var_name]
+
+        past = da.sel(era='1990-2021')
+        future = da.sel(era='2034-2065')
+        ratio = (future / past).where(~past['model'].isin(excluded_models))
+
+        # gcm_diff: 1990-2021 slot is NaN, 2034-2065 slot is ratio
+        gcm_diff_da = xr.concat(
+            [xr.full_like(past, fill_value=np.nan), ratio],
+            dim=pd.Index(['1990-2021', '2034-2065'], name='era'),
+        )
+
+        # gcm_diff_applied_to_cheng
+        hist_baseline = da.sel(era='1990-2021', model='historical')  # dims: (stream_id,)
+        future_applied = ratio * hist_baseline  # historical row stays NaN via ratio
+        is_historical = past['model'] == 'historical'
+        past_applied = xr.full_like(past, fill_value=np.nan).where(~is_historical, hist_baseline)
+        gcm_diff_applied_da = xr.concat(
+            [past_applied, future_applied],
+            dim=pd.Index(['1990-2021', '2034-2065'], name='era'),
+        )
+
+        combined = xr.concat([da, gcm_diff_da, gcm_diff_applied_da], dim=source_index)
+        combined.attrs = da.attrs
+        new_vars[var_name] = combined
+
+    result = xr.Dataset(new_vars)
+    result.attrs = result_ds.attrs
+    return result
+
+
 def add_metadata(ds):
     # these must be strings to be netCDF serializable
     ds.attrs["Data_Source"] = str(data_source_dict)
@@ -117,6 +155,9 @@ def main():
 
     print("Calculating statistics...")
     q_stats = calculate_statistics(q_ds)
+
+    print("Adding source dimension...")
+    q_stats = add_source_dimension(q_stats)
 
     print("Adding metadata...")
     q_stats = add_metadata(q_stats)
