@@ -31,7 +31,7 @@ def main():
     parser.add_argument("input_nc", help="Path to input .nc file")
     parser.add_argument("output_nc", help="Path to output .nc file")
     parser.add_argument("slurm_dir", help="Directory to write the .slurm job file")
-    parser.add_argument("--string-dims", nargs="*", default=["model", "era"], 
+    parser.add_argument("--string-dims", nargs="*", default=["model", "era", "source"],
                         help="List of string dimensions to convert to integers")
     parser.add_argument("--conda-env", default="snap-geo", help="Conda environment name to activate")
     parser.add_argument("--job-name", default="rasdaman_prep")

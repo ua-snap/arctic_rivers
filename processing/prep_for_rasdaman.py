@@ -44,15 +44,15 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def create_encoding_mapping(values):
-    # Get unique values and sort them for consistent ordering
-    unique_values = sorted(list(set(str(val) for val in values)))
-    
-    # Create mapping: {index: string_value}
+def create_encoding_mapping(values, sort=True):
+    str_values = [str(v) for v in values]
+    if sort:
+        unique_values = sorted(set(str_values))
+    else:
+        seen = set()
+        unique_values = [v for v in str_values if not (v in seen or seen.add(v))]
     encoding_map = {i: val for i, val in enumerate(unique_values)}
-    
-    # Create reverse mapping: {string_value: index}
-    reverse_map = {val: i for i, val in enumerate(unique_values)}
+    reverse_map = {val: i for i, val in encoding_map.items()}
     return encoding_map, reverse_map
 
 
@@ -80,8 +80,8 @@ def convert_string_dimensions(ds, string_dims):
         print(f"  Original values: {original_values}")
         print(f"  Original dtype: {ds[dim_name].dtype}")
         
-        # Create encoding mapping
-        encoding_map, reverse_map = create_encoding_mapping(original_values)
+        # Create encoding mapping (source preserves original dimension order)
+        encoding_map, reverse_map = create_encoding_mapping(original_values, sort=(dim_name != "source"))
         print(f"  Encoding mapping: {encoding_map}")
 
         # Convert string values to integer indices
