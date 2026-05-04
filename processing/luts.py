@@ -28,6 +28,7 @@ stat_var_dict = {
         "ma21": {"month": 10, "description": "Mean of monthly flow values for October.", "units": "cfs"},
         "ma22": {"month": 11, "description": "Mean of monthly flow values for November.", "units": "cfs"},
         "ma23": {"month": 12, "description": "Mean of monthly flow values for December.", "units": "cfs"},
+        "ma99": {"month": "all", "description": "Mean of monthly flow values for all months.", "units": "cfs"},
     }
 
 

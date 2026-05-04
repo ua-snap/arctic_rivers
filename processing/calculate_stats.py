@@ -77,7 +77,10 @@ def calculate_statistics(ds):
         units = info["units"]
         
         # Extract data for this specific month and drop month coordinate
-        month_data = monthly_mean[orig_var].sel(month=month_num).drop_vars("month")
+        if month_num == "all":
+            month_data = monthly_mean[orig_var].mean(dim="month", skipna=True)
+        else:
+            month_data = monthly_mean[orig_var].sel(month=month_num).drop_vars("month")
         
         # Clear existing attributes and set new ones
         month_data.attrs = {}
