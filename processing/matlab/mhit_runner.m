@@ -42,11 +42,11 @@ if n_files == 0
 end
 fprintf('Processing %d files with %d parallel workers...\n', n_files, ncores);
 
-% Read drainage area lookup once.
-% 'VariableNamingRule','preserve' prevents MATLAB from renaming columns like
-% 'fileName' to a modified identifier (e.g. 'FileName') on import.
-da_table = readtable(fullfile(csv_dir, 'drainageArea.csv'), ...
-    'VariableNamingRule', 'preserve');
+% Read drainage area lookup by column position to avoid MATLAB renaming
+% mixed-case CSV headers (e.g. 'fileName' -> 'FileName') on import.
+da_raw       = readtable(fullfile(csv_dir, 'drainageArea.csv'));
+da_filenames = da_raw{:, 1};   % cell array of stream basenames
+da_areas     = da_raw{:, 2};   % double array of drainage areas (mi2)
 
 % Column names for the output table
 % MHIT indices: 40 stats
@@ -67,7 +67,8 @@ stat_names = { ...
 };
 n_stats = numel(stat_names);
 
-% Pre-allocate result matrix (rows=files, cols=stats)
+% Pre-allocate result matrix (rows=files, cols=stats).
+% da_filenames and da_areas broadcast as simple array/cell to parfor workers.
 result_matrix = NaN(n_files, n_stats);
 file_names    = cell(n_files, 1);
 
@@ -99,11 +100,9 @@ parfor i = 1:n_files
         end
 
         % Get drainage area for this file
-        da_idx = strcmpi(da_table.fileName, fbase);
+        da_idx = strcmpi(da_filenames, fbase);
         if any(da_idx)
-            da_val = da_table.drainageArea(find(da_idx, 1));
-            if iscell(da_val), da_val = da_val{1}; end
-            da_mi2 = double(da_val);
+            da_mi2 = da_areas(find(da_idx, 1));
         else
             da_mi2 = NaN;
         end
