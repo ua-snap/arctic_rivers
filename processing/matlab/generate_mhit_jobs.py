@@ -16,7 +16,7 @@ Usage:
     --cpus 4 \
     --memory 16G \
     --time 4:00:00 \
-    --partition analysis \
+    --partition t2small \
     --max-concurrent 20
 
 This writes two SLURM scripts into --slurm-dir:
@@ -55,7 +55,7 @@ def main():
     p.add_argument("--cpus",          type=int, default=4)
     p.add_argument("--memory",        default="16G")
     p.add_argument("--time",          default="4:00:00")
-    p.add_argument("--partition",     default="analysis")
+    p.add_argument("--partition",     default="t2small")
     p.add_argument("--max-concurrent", type=int, default=20, help="Max simultaneous array tasks")
     p.add_argument("--cleanup", action="store_true",
                    help="Delete partial_*.nc files after a successful merge")
