@@ -125,9 +125,16 @@ parfor i = 1:n_files
         mo = mo(keep);
         dy = dy(keep);
 
-        % Skip if less than 2 years of non-NaN data remain after clipping
-        q_valid = q(~isnan(q));
-        if numel(q_valid) < 730
+        % Drop rows where discharge is NaN (~10-18 scattered days per series).
+        % mhit_get_colwellMat passes discharge to imquantize which requires
+        % non-NaN input; the effect of removing a handful of days is negligible.
+        valid = ~isnan(q);
+        q  = q(valid);
+        yr = yr(valid);
+        mo = mo(valid);
+        dy = dy(valid);
+
+        if numel(q) < 730
             continue
         end
 
