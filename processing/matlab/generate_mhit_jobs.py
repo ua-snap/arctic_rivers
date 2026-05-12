@@ -57,6 +57,8 @@ def main():
     p.add_argument("--time",          default="4:00:00")
     p.add_argument("--partition",     default="analysis")
     p.add_argument("--max-concurrent", type=int, default=20, help="Max simultaneous array tasks")
+    p.add_argument("--cleanup", action="store_true",
+                   help="Delete partial_*.nc files after a successful merge")
     args = p.parse_args()
 
     slurm_dir  = Path(args.slurm_dir)
@@ -181,7 +183,7 @@ fi
 python {scripts_dir}/merge_mhit_chunks.py \\
     --partial-dir {staging_dir} \\
     --output      {args.output_nc} \\
-    --q-nc        {args.q_nc}
+    --q-nc        {args.q_nc}{" \\\n    --cleanup" if args.cleanup else ""}
 
 echo "Merge completed at $(date)"
 echo "Output: {args.output_nc}"

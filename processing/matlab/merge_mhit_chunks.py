@@ -20,6 +20,8 @@ def main():
     p.add_argument("--partial-dir", required=True, help="Directory of partial_*.nc files")
     p.add_argument("--output",      required=True, help="Output NetCDF path")
     p.add_argument("--q-nc",        required=True, help="combined_q.nc (used for expected stream_ids)")
+    p.add_argument("--cleanup",     action="store_true",
+                   help="Delete partial_*.nc files after a successful merge")
     args = p.parse_args()
 
     partial_dir = Path(args.partial_dir)
@@ -53,6 +55,12 @@ def main():
 
     for d in datasets:
         d.close()
+
+    if args.cleanup:
+        print("Cleaning up partial files...")
+        for p in partials:
+            p.unlink()
+        print(f"Deleted {len(partials)} partial files from {partial_dir}")
 
 
 if __name__ == "__main__":

@@ -42,8 +42,11 @@ if n_files == 0
 end
 fprintf('Processing %d files with %d parallel workers...\n', n_files, ncores);
 
-% Read drainage area lookup once
-da_table = readtable(fullfile(csv_dir, 'drainageArea.csv'));
+% Read drainage area lookup once.
+% 'VariableNamingRule','preserve' prevents MATLAB from renaming columns like
+% 'fileName' to a modified identifier (e.g. 'FileName') on import.
+da_table = readtable(fullfile(csv_dir, 'drainageArea.csv'), ...
+    'VariableNamingRule', 'preserve');
 
 % Column names for the output table
 % MHIT indices: 40 stats

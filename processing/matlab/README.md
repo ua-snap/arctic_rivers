@@ -103,6 +103,7 @@ Optional tuning arguments:
 | `--partition` | analysis | SLURM partition |
 | `--max-concurrent` | 20 | Max simultaneously running array tasks |
 | `--conda-env` | snap-geo | Conda environment for Python steps |
+| `--cleanup` | off | Delete `partial_*.nc` files from staging dir after a successful merge |
 
 ### 5. Test with a single task before submitting all
 
