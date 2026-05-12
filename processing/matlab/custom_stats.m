@@ -93,6 +93,7 @@ function stats = custom_stats(discharge, yr, mo, dy, da_mi2)
     for i = 1:nyrs
         mask = yr == years(i) & mo >= 4 & mo <= 6;
         q = discharge(mask);
+        if isempty(q), continue; end
         above = q > p10;
         above(isnan(q)) = false;
         trans = diff([0; above; 0]);
@@ -105,6 +106,7 @@ function stats = custom_stats(discharge, yr, mo, dy, da_mi2)
     for i = 1:nyrs
         mask = yr == years(i) & mo >= 7 & mo <= 9;
         q = discharge(mask);
+        if isempty(q), continue; end
         below = q < p90;
         below(isnan(q)) = false;
         trans = diff([0; below; 0]);
@@ -118,9 +120,15 @@ function stats = custom_stats(discharge, yr, mo, dy, da_mi2)
         sum_min_vals = NaN(nyrs, 1);
         for i = 1:nyrs
             spr_mask = yr == years(i) & mo >= 4 & mo <= 6;
-            spr_max_vals(i) = nanmax(discharge(spr_mask));
+            q_spr = discharge(spr_mask);
+            if ~isempty(q_spr)
+                spr_max_vals(i) = nanmax(q_spr);
+            end
             sum_mask = yr == years(i) & mo >= 7 & mo <= 9;
-            sum_min_vals(i) = nanmin(discharge(sum_mask));
+            q_sum = discharge(sum_mask);
+            if ~isempty(q_sum)
+                sum_min_vals(i) = nanmin(q_sum);
+            end
         end
         stats.spr_mag = nanmedian(spr_max_vals / da_mi2);
         stats.sum_mag = nanmedian(sum_min_vals / da_mi2);

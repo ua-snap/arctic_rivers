@@ -54,7 +54,7 @@ MHIT_STATS = {
     # --- Rate of change ---
     "ra1":      {"category": "rate_of_change", "units": "cfs_per_day",     "code_base": "mhit",   "difference_method": "ratio",    "description": "Mean rise rate: mean of positive daily flow changes."},
     "ra3":      {"category": "rate_of_change", "units": "cfs_per_day",     "code_base": "mhit",   "difference_method": "ratio",    "description": "Mean fall rate: mean of negative daily flow changes."},
-    "ra8":      {"category": "rate_of_change", "units": "days",            "code_base": "mhit",   "difference_method": "ratio",    "description": "Median annual number of flow direction reversals."},
+    "ra8":      {"category": "rate_of_change", "units": "days_per_year",   "code_base": "mhit",   "difference_method": "ratio",    "description": "Median annual number of flow direction reversals."},
     # --- Timing ---
     "th1":      {"category": "timing",         "units": "julian_day",      "code_base": "mhit",   "difference_method": "absolute", "description": "Median Julian date of annual maximum flow."},
     "tl1":      {"category": "timing",         "units": "julian_day",      "code_base": "mhit",   "difference_method": "absolute", "description": "Median Julian date of annual minimum flow."},

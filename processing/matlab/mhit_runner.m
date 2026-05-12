@@ -44,7 +44,7 @@ fprintf('Processing %d files with %d parallel workers...\n', n_files, ncores);
 
 % Read drainage area lookup by column position to avoid MATLAB renaming
 % mixed-case CSV headers (e.g. 'fileName' -> 'FileName') on import.
-da_raw       = readtable(fullfile(csv_dir, 'drainageArea.csv'));
+da_raw       = readtable(fullfile(csv_dir, 'drainageArea.csv'), 'Delimiter', ',');
 da_filenames = da_raw{:, 1};   % cell array of stream basenames
 da_areas     = da_raw{:, 2};   % double array of drainage areas (mi2)
 
@@ -92,7 +92,7 @@ parfor i = 1:n_files
     row = NaN(1, n_stats);
 
     try
-        data = readtable(fullfile(csv_dir, fname));
+        data = readtable(fullfile(csv_dir, fname), 'Delimiter', ',');
 
         % Require columns: year month day discharge
         if ~all(ismember({'year','month','day','discharge'}, data.Properties.VariableNames))
