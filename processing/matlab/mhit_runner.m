@@ -112,7 +112,20 @@ parfor i = 1:n_files
         mo = double(data.month);
         dy = double(data.day);
 
-        % Skip if less than 2 years of non-NaN data
+        % Clip to complete water years (Oct-Sep).
+        % Partial years at the era boundaries cause cellfun errors inside MHIT
+        % because some per-year computations return [] instead of a scalar.
+        water_yr = yr - (mo <= 9);
+        wy_unique = unique(water_yr);
+        months_per_wy = arrayfun(@(wy) numel(unique(mo(water_yr == wy))), wy_unique);
+        complete_wys = wy_unique(months_per_wy >= 12);
+        keep = ismember(water_yr, complete_wys);
+        q  = q(keep);
+        yr = yr(keep);
+        mo = mo(keep);
+        dy = dy(keep);
+
+        % Skip if less than 2 years of non-NaN data remain after clipping
         q_valid = q(~isnan(q));
         if numel(q_valid) < 730
             continue
@@ -178,7 +191,7 @@ parfor i = 1:n_files
         row(52) = cs.sum_ord;
 
     catch e
-        fprintf('  WARNING: error on %s: %s\n', fbase, e.message);
+        fprintf('  WARNING: error on %s: %s\n', fbase, getReport(e, 'extended', 'hyperlinks', 'off'));
     end
 
     result_matrix(i, :) = row;
