@@ -158,6 +158,7 @@ echo "Task ${{SLURM_ARRAY_TASK_ID}} completed at $(date)"
     print(f"Wrote: {chunk_script}")
 
     # ---------- merge job ----------
+    cleanup_flag = " \\\n    --cleanup" if args.cleanup else ""
     merge_script = slurm_dir / "mhit_merge.slurm"
     merge_content = f"""#!/bin/bash
 #SBATCH -J mhit_merge
@@ -183,7 +184,7 @@ fi
 python {scripts_dir}/merge_mhit_chunks.py \\
     --partial-dir {staging_dir} \\
     --output      {args.output_nc} \\
-    --q-nc        {args.q_nc}{" \\\n    --cleanup" if args.cleanup else ""}
+    --q-nc        {args.q_nc}{cleanup_flag}
 
 echo "Merge completed at $(date)"
 echo "Output: {args.output_nc}"
