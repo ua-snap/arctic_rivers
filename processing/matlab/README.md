@@ -2,6 +2,10 @@
 
 Computes 52 hydrological statistics for all 34,346 stream segments across 7 climate models and 2 eras using the [MHIT](https://github.com/mabouali/MHIT) MATLAB library plus custom seasonal statistics. Jobs are distributed across SLURM so that stream segments are processed in parallel chunks.
 
+See this paper for more details about MHIT: https://www.sciencedirect.com/science/article/pii/S1574954116300115?via%3Dihub#bb0110
+
+See page 47 of this document for definitions of the hydrologic indices: https://pubs.usgs.gov/of/2006/1093/report.pdf
+
 > **Paths in examples below use `jdpaul3` as a placeholder.** Replace all paths with your own account and data directories. No user-specific paths are hardcoded in the scripts themselves — all paths are passed as arguments.
 
 ---
