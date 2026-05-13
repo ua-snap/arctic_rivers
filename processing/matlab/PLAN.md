@@ -1,229 +1,204 @@
-# MHIT SLURM Pipeline — Plan & Progress
-
-**Goal:** Run MHIT + custom MATLAB functions on `combined_q.nc` to produce a NetCDF of 47 hydrological statistics for all 34,346 stream segments, 7 models, and 2 eras.
-
-**Status:** Implementation in progress
+# MHIT Hydrological Statistics Pipeline — Plan & Progress
 
 ---
 
-## Context
+## Phase 1: Compute MHIT statistics — COMPLETE
+
+`mhit_indices.nc` produced successfully at `/beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices.nc`
+
+- Dimensions: `era=2, model=7, stream_id=34346`
+- Variables: 52 float32 hydrological statistics
+- Coverage: 78.6% valid — expected, because `historical` only covers era `1990-2021` and `PGWh`/`PGWm` only cover era `2034-2065`; all (model, era) combinations that have input data produced output
+
+---
+
+## Phase 2: Add source dimension — TOMORROW
+
+### Goal
+
+Transform `mhit_indices.nc` from `(era, model, stream_id)` to `(source, era, model, stream_id)` by adding a `source` dimension with three values, mirroring the pattern established in `processing/calculate_stats.py`.
+
+### Source dimension values
+
+| source | Description |
+|--------|-------------|
+| `original_gcm` | The 52 MHIT stats as-is from Phase 1 |
+| `gcm_diff` | Change signal between C2LE models' future and historical eras |
+| `gcm_diff_applied_to_cheng` | `gcm_diff` applied to the `historical` model 1990-2021 baseline |
+
+### Models excluded from gcm_diff
+
+`['historical', 'PGWh', 'PGWm']` — same as `calculate_stats.py`.
+- `historical` has no future era to diff against
+- `PGWh`/`PGWm` are single-era projections with no paired historical run
+
+C2LE2, C2LE4, C2LE7, C2LE9 get `gcm_diff` and `gcm_diff_applied_to_cheng`.
+
+### gcm_diff computation
+
+For each variable `da` (shape `era, model, stream_id`):
+```python
+past   = da.sel(era='1990-2021')   # shape: (model, stream_id)
+future = da.sel(era='2034-2065')   # shape: (model, stream_id)
+```
+
+`gcm_diff` is computed **per variable** using the `difference_method` field in `luts_mhit.py` (38 ratio stats, 14 absolute stats):
+
+**Ratio stats** (magnitudes, durations in cfs, rate-of-change):
+```python
+safe_past = past.where(past != 0, other=0.01)   # guard zero division
+gcm_diff = (future / safe_past).where(~past["model"].isin(excluded_models))
+```
+
+**Absolute stats** (timing in julian days, frequency in events/yr, lf1/sum_mag):
+```python
+gcm_diff = (future - past).where(~past["model"].isin(excluded_models))
+```
+
+In the output:
+- `source=gcm_diff, era=1990-2021` → all NaN (no past-era change signal)
+- `source=gcm_diff, era=2034-2065` → NaN for excluded models, ratio/diff for C2LE models
+
+### gcm_diff_applied_to_cheng computation
+
+```python
+hist_baseline = da.sel(era='1990-2021', model='historical')  # shape: (stream_id,)
+```
+
+**Ratio stats:**
+```python
+future_applied = gcm_diff * hist_baseline   # NaN for excluded models via gcm_diff; C2LE 2034-2065 only
+```
+
+**Absolute stats:**
+```python
+future_applied = gcm_diff + hist_baseline
+```
+
+For both methods, the 1990-2021 slot is NaN for all models except `historical`, which gets `hist_baseline`:
+```python
+is_hist      = past["model"] == "historical"
+past_applied = xr.full_like(past, fill_value=np.nan).where(~is_hist, hist_baseline)
+```
+
+Then concatenate back into era dimension and concat all three sources:
+```python
+source_index   = pd.Index(['original_gcm', 'gcm_diff', 'gcm_diff_applied_to_cheng'], name='source')
+gcm_diff_da    = xr.concat([xr.full_like(past, np.nan), gcm_diff],
+                            dim=pd.Index(['1990-2021', '2034-2065'], name='era'))
+applied_da     = xr.concat([past_applied, future_applied],
+                            dim=pd.Index(['1990-2021', '2034-2065'], name='era'))
+combined       = xr.concat([da, gcm_diff_da, applied_da], dim=source_index)
+```
+
+Result layout (same for both methods):
+
+| model / era | 1990-2021 | 2034-2065 |
+|-------------|-----------|-----------|
+| `historical` | `hist_baseline` (observed) | NaN |
+| `C2LE*` | NaN | adjusted future projection |
+| `PGWh`, `PGWm` | NaN | NaN |
+
+### Absolute stats in luts_mhit.py (14 total)
+
+`sum_mag`, `lf1`, `fh1`, `fh5`, `fh6`, `fh7`, `fl1`, `fl3`, `spr_freq`, `sum_freq`, `th1`, `tl1`, `spr_ord`, `sum_ord`
+
+### File to create
+
+**`processing/matlab/add_source_dim_mhit.py`**
+
+Standalone Python script — no SLURM needed (96 MB input, pure xarray math, runs in minutes).
+
+Must be run from `processing/matlab/` (or add that dir to `sys.path`) so that `from luts_mhit import MHIT_STATS` resolves. Uses `snap-geo` conda env.
+
+```
+Usage:
+  cd /import/home/jdpaul3/arctic_rivers/processing/matlab
+  conda activate snap-geo
+  python add_source_dim_mhit.py \
+    --input  /beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices.nc \
+    --output /beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices_sourced.nc
+```
+
+Script structure (mirrors `calculate_stats.py`):
+1. Open `mhit_indices.nc`
+2. For each of the 52 variables, compute `gcm_diff` and `gcm_diff_applied_to_cheng` slices using the per-variable `difference_method` from `luts_mhit.py`
+3. `xr.concat([original, gcm_diff_da, gcm_diff_applied_da], dim=source_index)` to build each variable
+4. Assemble into an `xr.Dataset` with encoding/compression
+5. Write to output path
+
+Output structure:
+```
+dimensions: source=3, era=2, model=7, stream_id=34346
+coordinates:
+  source: ['original_gcm', 'gcm_diff', 'gcm_diff_applied_to_cheng']
+  era:    ['1990-2021', '2034-2065']
+  model:  ['C2LE2', 'C2LE4', 'C2LE7', 'C2LE9', 'PGWh', 'PGWm', 'historical']
+  stream_id: int64[34346]
+variables: 52 float32 statistics, dims (source, era, model, stream_id)
+```
+
+### Verification after running
+
+Check these after the script completes:
+
+1. Dimensions and coordinate values correct
+2. `source=original_gcm` values match original `mhit_indices.nc` exactly
+3. `gcm_diff` is NaN for historical/PGWh/PGWm across both eras
+4. `gcm_diff` era=1990-2021 is all NaN for C2LE models too
+5. `gcm_diff` era=2034-2065 has valid values for all 4 C2LE models
+6. `gcm_diff_applied_to_cheng` era=1990-2021 is only non-NaN for `model=historical`
+7. `gcm_diff_applied_to_cheng` era=2034-2065 is only non-NaN for C2LE models
+8. Sanity check a ratio stat (e.g., `ma16`): `gcm_diff_applied[C2LE2, 2034-2065] ≈ original[C2LE2, 2034-2065] / original[C2LE2, 1990-2021] × original[historical, 1990-2021]`
+9. Sanity check an absolute stat (e.g., `th1`): `gcm_diff[C2LE2, 2034-2065] = original[C2LE2, 2034-2065] − original[C2LE2, 1990-2021]`
+
+### Checklist
+
+- [ ] Write `add_source_dim_mhit.py`
+- [ ] Run script, write `mhit_indices_sourced.nc`
+- [ ] Verify structure and spot-check values
+- [ ] Decide on final output filename (overwrite `mhit_indices.nc` or keep `_sourced` suffix)
+
+---
+
+## Phase 1 Reference
 
 ### Input
 - **File:** `/beegfs/CMIP6/jdpaul3/arctic_rivers_data/combined_q.nc`
-- **Variable:** `IRFroutedRunoff(model, time, stream_id)` — float, NaN fill, **units: cfs (already)**
-- **Dimensions:** model=7, time=23216 (days since 1990-01-01, proleptic_gregorian), stream_id=34346
+- **Variable:** `IRFroutedRunoff(model, time, stream_id)` — float, NaN fill, units: cfs
 - **Models:** historical, PGWh, PGWm, C2LE2, C2LE4, C2LE7, C2LE9
-- **Era split** (matching existing calculate_stats.py):
-  - Era 1 `"1990-2021"`: time < 2022-01-01
-  - Era 2 `"2034-2065"`: time ≥ 2022-01-01
+- **Era split:** `< 2022-01-01` → `1990-2021`; `≥ 2022-01-01` → `2034-2065`
 
-### Reference Output
-- **File:** `/beegfs/CMIP6/jdpaul3/arctic_rivers_data/stats_q_diff.nc`
-- **Dimensions:** source=3, era=2, model=7, stream_id=34346
-- **Our output** will use simpler `(era, model, stream_id)` — no source dimension
+### Files (all in `processing/matlab/`)
+| File | Description |
+|------|-------------|
+| `luts_mhit.py` | Metadata for all 52 statistics (units, category, difference_method) |
+| `prep_drainage_area.py` | One-time: extract drainage area from AK_Rivers.gpkg → CSV |
+| `mhit_chunk.py` | Python worker: `extract` (NetCDF → CSVs) and `pack` (results.csv → partial NetCDF) |
+| `mhit_runner.m` | MATLAB orchestrator: reads env vars, runs MHIT + custom_stats via parfor |
+| `custom_stats.m` | MATLAB: 12 custom seasonal statistics |
+| `generate_mhit_jobs.py` | Generates SLURM job array + merge job scripts |
+| `merge_mhit_chunks.py` | Concatenates partial NetCDFs → final output |
+| `README.md` | Full setup and run instructions |
 
-### Drainage Area
-- **File:** `/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data/AK_Rivers.gpkg` — layer `AK_Rivers`
-- **Column:** `uparea` (float, km²), keyed on `COMID`
-- `stream_id` in combined_q.nc == `COMID` in AK_Rivers.gpkg (verified: 81000004 is first in both)
-- **Conversion:** km² × 0.386102 → mi² (MHIT and custom stats use mi² for normalization)
-- Preprocessing step writes `drainage_area_lookup.csv` once (COMID, uparea_mi2)
-
-### MHIT Tool
-- **Repo:** https://github.com/mabouali/MHIT/tree/master
-- **MATLAB:** R2023b at `/usr/local/pkg/manual/MATLAB/R2023b/bin/matlab`
-- **Module:** `module load MATLAB/R2023b`
-- **Core function:** `mhit_getAllIndices(discharge, year, month, day, drainageArea)`
-- **Batch function:** `mhit_getAllInd_AllFiles(inputDIR, fileExtension)` → returns HydInd table
-- **CSV input format:** `year,month,day,discharge` (header required, one file per stream×model×era)
-- **drainageArea.csv format:** `fileName,drainageArea` (fileName without .csv extension)
-
----
-
-## Statistics to Compute (47 total)
-
-Source: https://github.com/ua-snap/hydroviz/blob/main/data/streamflow_statistics_description_table.csv
-
-### MHIT-based (35 stats, code_base=mhit)
-| Stat | Category | Description |
-|------|----------|-------------|
-| MA3 | magnitude | CV of annual daily flows (mean of annual CVs) |
-| MA4 | magnitude | SD/mean of percentiles of log-transformed flow |
-| MA12–MA23 | magnitude | Mean monthly flows (Jan–Dec) |
-| MH14 | magnitude | Median of annual max / median annual flow |
-| MH20 | magnitude | Mean annual max / drainage area (cfs/mi²) |
-| ML17 | magnitude | Base flow: mean(annual 7-day min / annual mean) |
-| DH1–DH5 | duration | Annual max N-day moving avg (N=1,3,7,30,90) |
-| DH15 | duration | High flow pulse duration (>75th pct) |
-| DL1–DL5 | duration | Annual min N-day moving avg (N=1,3,7,30,90) |
-| DL16 | duration | Low flow pulse duration (<25th pct) |
-| FH1 | frequency | High pulse count (>75th pct, mean/yr) |
-| FH5 | frequency | Flood freq (>median, mean/yr) |
-| FH6 | frequency | Flood freq (>3×median, mean/yr) |
-| FH7 | frequency | Flood freq (>7×median, mean/yr) |
-| FL1 | frequency | Low pulse count (<25th pct, mean/yr) |
-| FL3 | frequency | Low pulse count (<5% mean, mean/yr) |
-| RA1 | rate_of_change | Mean rise rate (cfs/day) |
-| RA3 | rate_of_change | Mean fall rate (cfs/day) |
-| RA8 | rate_of_change | Median annual reversals (days) |
-| TH1 | timing | Julian date of annual max (median) |
-| TL1 | timing | Julian date of annual min (median) |
-
-### Custom MATLAB (12 stats, code_base=matlab)
-| Stat | Category | Description |
-|------|----------|-------------|
-| LF1 | duration | Days/yr below 0.1 cfs/mi² × area threshold; median |
-| SPR_DUR3 | duration | Spring (Apr–Jun) max 3-day moving avg; median |
-| SPR_DUR7 | duration | Spring (Apr–Jun) max 7-day moving avg; median |
-| SUM_DUR3 | duration | Summer (Jul–Sep) min 3-day moving avg; median |
-| SUM_DUR7 | duration | Summer (Jul–Sep) min 7-day moving avg; median |
-| SPR_FREQ | frequency | Apr–Jun events above 10th pct of full record; median |
-| SUM_FREQ | frequency | Jul–Sep events below 90th pct of full record; median |
-| SPR_MAG | magnitude | Median(annual spring max / drainage area) (cfs/mi²) |
-| SUM_CV | magnitude | Median of annual summer CV (Jul–Sep) |
-| SUM_MAG | magnitude | Median(annual summer min / drainage area) (cfs/mi²) |
-| SPR_ORD | timing | Julian date of spring (Apr–Jun) max; median |
-| SUM_ORD | timing | Julian date of summer (Jul–Sep) min; median |
-
----
-
-## Architecture
-
-### Pipeline Overview
-
-```
-[SETUP - run once]
-  prep_drainage_area.py
-    → reads AK_Rivers.gpkg, converts km² to mi²
-    → writes drainage_area_lookup.csv (COMID, uparea_mi2)
-
-[JOB GENERATION]
-  generate_mhit_jobs.py
-    → generates N SLURM scripts, one per stream_id chunk
-    → or generates a SLURM job array
-
-[PER-CHUNK JOBS - run in parallel]
-  mhit_chunk_job.slurm  (for stream_ids [i : i+chunk_size])
-    Step 1 (Python): mhit_chunk.py --mode extract
-      → loads combined_q.nc slice for this chunk
-      → splits by era (< or ≥ 2022-01-01)
-      → writes CSVs: $TMPDIR/<comid>_<model>_<era>.csv
-      → writes $TMPDIR/drainageArea.csv
-    Step 2 (MATLAB): matlab -batch "mhit_runner('$TMPDIR', '$OUTDIR')"
-      → addpath MHIT MFiles
-      → mhit_getAllInd_AllFiles → HydInd table
-      → custom_stats(discharge, dates, drainage_area) → CustomInd table
-      → writetable(HydInd, '$OUTDIR/mhit_results.csv')
-      → writetable(CustomInd, '$OUTDIR/custom_results.csv')
-    Step 3 (Python): mhit_chunk.py --mode pack
-      → reads mhit_results.csv + custom_results.csv
-      → parses COMID/model/era from fileName
-      → extracts the 47 target statistics
-      → writes staging_dir/partial_mhit_<start>_<end>.nc
-    Step 4: rm -rf $TMPDIR (cleanup CSVs)
-
-[FINAL MERGE]
-  merge_mhit_chunks.py
-    → xr.open_mfdataset(staging_dir/partial_mhit_*.nc)
-    → concat along stream_id
-    → write final mhit_indices.nc
-```
-
-### Files to Create
-
-```
-arctic_rivers/processing/matlab/
-├── PLAN.md                        ← this file
-├── prep_drainage_area.py          ← one-time: extract drainage area to CSV
-├── generate_mhit_jobs.py          ← generates SLURM scripts for all chunks
-├── mhit_chunk.py                  ← Python worker: extract CSVs and pack NetCDF
-├── mhit_runner.m                  ← MATLAB: calls MHIT + custom stats
-├── custom_stats.m                 ← MATLAB: implements the 12 custom statistics
-├── merge_mhit_chunks.py           ← merges partial NetCDFs into final output
-└── luts_mhit.py                   ← stat names, descriptions, units metadata
-```
-
-### Chunking & SLURM Parameters
-- **Chunk size:** 500 streams/job → ~69 jobs
-- **CPUs per job:** 4 (for MATLAB parfor)
-- **Memory per job:** 16 GB
-- **Walltime:** 4 hours (conservative; MHIT is fast at ~12 min for many streams)
-- **CSV volume per job:** 500 streams × 14 model×era combos × ~32 yrs × 365 days/yr × ~20 bytes/row ≈ 1.6 GB temporary (on $TMPDIR, deleted after packing)
-- **Output per partial NC:** 47 vars × float32 × 2 eras × 7 models × 500 streams ≈ 13 MB
-
-### Output NetCDF Structure
-```
-dimensions: era=2, model=7, stream_id=34346
-coordinates: era (string), model (string), stream_id (int64)
-data variables: 47 float32 variables (one per statistic)
-    dims: (era, model, stream_id), fill_value=NaN
-    attrs: description, units, category, difference_method
-```
-
----
-
-## Conda Environment
-
-- Python scripts: base conda env (`/home/jdpaul3/miniconda3`)
-  - Has: xarray 2025.9.1, numpy, pandas (verify fiona/geopandas availability)
-- Drainage area prep: `hydroviz_shp` micromamba env (has fiona)
-- MATLAB: `module load MATLAB/R2023b`
-
----
-
-## Open Questions (Resolved)
-
-| Question | Answer |
-|----------|--------|
-| Drainage area source | AK_Rivers.gpkg, `uparea` column (km²) → convert to mi² |
-| IRFroutedRunoff units | Already cfs |
-| Which indices | 47 from hydroviz table |
-| Output dimensions | Simple (era, model, stream_id) |
-| Source dimension | Not needed |
-
----
-
-## Notes
-
-- There are **52 statistics** total (not 47 as originally estimated): 17 duration, 8 frequency, 20 magnitude, 3 rate_of_change, 4 timing
-- `snap-geo` conda env uses `python` binary (not `python3`) — all scripts use `#!/usr/bin/env python`
-- MATLAB `-batch` mode: scripts read config via `getenv()` env vars set by the SLURM job
-- CSV filename separator is `__` (double underscore): `<comid>__<model>__<era>.csv`
-- `mhit_getAllIndices` returns struct fields `.MA`, `.ML`, `.MH`, `.FL`, `.FH`, `.DL`, `.DH`, `.TH`, `.TL`, `.RA` as 1D arrays; index i → statistic i (e.g., `MA(3)` = MA3)
-
-## Progress Log
-
-| Date | Status | Notes |
-|------|--------|-------|
-| 2026-05-12 | Planning complete | Architecture finalized |
-| 2026-05-12 | Implementation complete | All 7 files written |
-
-### Implementation Checklist
-- [x] `luts_mhit.py` — 52-stat metadata dict
-- [x] `prep_drainage_area.py` — one-time drainage area extraction
-- [x] `mhit_chunk.py` — CSV extraction (extract mode) and NetCDF packing (pack mode)
-- [x] `mhit_runner.m` — MATLAB orchestrator (parfor, MHIT + custom_stats)
-- [x] `custom_stats.m` — 12 custom seasonal statistics
-- [x] `generate_mhit_jobs.py` — generates mhit_chunks.slurm (job array) + mhit_merge.slurm
-- [x] `merge_mhit_chunks.py` — concatenates partial NetCDFs → final output
-- [ ] Clone MHIT repo: `git clone https://github.com/mabouali/MHIT /beegfs/CMIP6/jdpaul3/MHIT`
-- [ ] Run `prep_drainage_area.py` once
-- [ ] Test on small sample (10 streams, 1 model, 1 era)
-- [ ] Generate jobs: `python generate_mhit_jobs.py ...`
-- [ ] Full run
+### Key bugs fixed during Phase 1
+- MATLAB `readtable` auto-detects `_` as delimiter for `drainageArea.csv` → added `'Delimiter', ','`
+- `custom_stats.m` crashed on empty spring/summer seasons at era boundaries → added `isempty` guards
+- `ra8` units `"days"` triggered xarray CF time-decoding → changed to `"days_per_year"`
+- MATLAB `readtable` renames mixed-case CSV headers → switched to column-position access `{:,1}`, `{:,2}`
+- Water year clipping (partial boundary years cause MHIT `cellfun` errors) → clip to complete water years
+- Scattered NaN discharge days crash `mhit_get_colwellMat` → drop NaN rows before passing to MHIT
 
 ---
 
 ## Resuming a Session
 
-If this session is interrupted, point a new Claude session at this file and say:
-> "Continue the MHIT pipeline implementation described in `/import/home/jdpaul3/arctic_rivers/processing/matlab/PLAN.md`"
+Point a new Claude session at this file:
+> "Continue the MHIT pipeline work described in `/import/home/jdpaul3/arctic_rivers/processing/matlab/PLAN.md`. We are on Phase 2."
 
-Key context to re-read:
-1. This file (PLAN.md) — architecture, file list, progress checklist
-2. `/import/home/jdpaul3/arctic_rivers/processing/generate_stats_job.py` — SLURM job generator style
-3. `/import/home/jdpaul3/arctic_rivers/processing/calculate_stats.py` — era split logic, xarray patterns
-4. `/import/home/jdpaul3/arctic_rivers/processing/luts.py` — metadata patterns
-5. `ncdump -h /beegfs/CMIP6/jdpaul3/arctic_rivers_data/combined_q.nc` — input NetCDF dims
-6. MHIT README at https://github.com/mabouali/MHIT/tree/master — CSV format, mhit_getAllIndices signature
-7. Stats table at https://github.com/ua-snap/hydroviz/blob/main/data/streamflow_statistics_description_table.csv
+Key references for Phase 2:
+1. This file
+2. `/import/home/jdpaul3/arctic_rivers/processing/matlab/luts_mhit.py` — `difference_method` per stat
+3. Reference implementation of `add_source_dimension()` — fetch with WebFetch:
+   `https://raw.githubusercontent.com/ua-snap/arctic_rivers/add_diff/processing/calculate_stats.py`
+4. `/beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices.nc` — Phase 1 output (input to Phase 2)
