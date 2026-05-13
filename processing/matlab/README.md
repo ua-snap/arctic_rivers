@@ -12,10 +12,10 @@ See page 47 of this document for definitions of the hydrologic indices: https://
 
 ## Output
 
-A NetCDF file at a path of your choosing (passed as `--output-nc` to `generate_mhit_jobs.py`).
+A NetCDF file at a path of your choosing (passed as `--output-nc` to `generate_mhit_jobs.py`), then post-processed by steps 7 and 8 below.
 
-Dimensions: `era=2`, `model=7`, `stream_id=34346`  
-Variables: 52 float32 statistics (see `luts_mhit.py` for names, units, descriptions)
+Final output dimensions: `source=3`, `era=2`, `model=7`, `stream_id=34346`  
+Variables: 53 float32 statistics (52 MHIT + `ma99`; see `luts_mhit.py` for names, units, descriptions)
 
 ---
 
@@ -129,6 +129,63 @@ sbatch --dependency=afterok:$ARRAY_JOB_ID slurm/mhit_merge.slurm
 
 The merge job will not start until all chunk tasks complete successfully. If any task fails, the merge job will not run; fix and resubmit failed tasks (they will skip already-completed chunks).
 
+### 7. Add ma99 (mean annual flow)
+
+Computes `ma99` — the average of monthly mean flows `ma12`–`ma23` — and appends it to the output as a 53rd variable. Can be run on a **login node** (file is ~96 MB, pure xarray math).
+
+```bash
+conda activate snap-geo
+python /import/home/jdpaul3/arctic_rivers/processing/matlab/add_ma99.py \
+    --input  /beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices.nc \
+    --output /beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices_ma99.nc
+```
+
+### 8. Add source dimension
+
+Transforms the dataset from `(era, model, stream_id)` to `(source, era, model, stream_id)` by computing change signals for the C2LE ensemble models. Can be run on a **login node**.
+
+The three source values are:
+
+| source | Description |
+|--------|-------------|
+| `original_gcm` | The 53 statistics as-is from steps 6–7 |
+| `gcm_diff` | Change signal between C2LE models' future and historical eras (ratio for flow/duration/rate stats; absolute difference for timing/frequency stats) |
+| `gcm_diff_applied_to_cheng` | `gcm_diff` applied to the `historical` model 1990–2021 baseline |
+
+`historical`, `PGWh`, and `PGWm` are excluded from `gcm_diff` and `gcm_diff_applied_to_cheng` (no paired future/historical run).
+
+```bash
+conda activate snap-geo
+python /import/home/jdpaul3/arctic_rivers/processing/matlab/add_source_dim_mhit.py \
+    --input  /beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices_ma99.nc \
+    --output /beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices_combined.nc
+```
+
+### 9. Prepare for Rasdaman ingestion
+
+Converts string dimensions (`model`, `era`, `source`) to integer indices and stores the string-to-integer mappings in each coordinate's `encoding` attribute, as required by Rasdaman.
+
+Generate and submit the SLURM job:
+
+```bash
+python /import/home/jdpaul3/arctic_rivers/processing/matlab/generate_rasdaman_job.py \
+    --scripts-dir /import/home/jdpaul3/arctic_rivers/processing \
+    --input       /beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices_combined.nc \
+    --output      /beegfs/CMIP6/jdpaul3/arctic_rivers_data/mhit_indices_combined_for_rasdaman.nc \
+    --slurm-dir   /import/home/jdpaul3/arctic_rivers/processing/matlab/slurm
+
+sbatch slurm/rasdaman_prep.slurm
+```
+
+Optional arguments:
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--memory` | 16G | Memory for the SLURM job |
+| `--time` | 1:00:00 | Walltime |
+| `--partition` | t2small | SLURM partition |
+| `--conda-env` | snap-geo | Conda environment |
+
 ---
 
 ## Per-chunk job internals
@@ -152,13 +209,16 @@ Each SLURM task does the following for its stream index range `[start:end]`:
 
 | File | Description |
 |------|-------------|
-| `luts_mhit.py` | Metadata (units, description, category) for all 52 statistics |
+| `luts_mhit.py` | Metadata (units, description, category) for all 53 statistics |
 | `prep_drainage_area.py` | One-time: extract drainage area from `AK_Rivers.gpkg` → CSV |
 | `mhit_chunk.py` | Python worker: `extract` and `pack` modes |
 | `mhit_runner.m` | MATLAB orchestrator: reads env vars, runs MHIT + custom stats |
 | `custom_stats.m` | MATLAB function: 12 custom seasonal statistics |
 | `generate_mhit_jobs.py` | Generates `slurm/mhit_chunks.slurm` and `slurm/mhit_merge.slurm` |
 | `merge_mhit_chunks.py` | Merges partial NetCDFs into final output |
+| `add_ma99.py` | Post-processing step 7: adds `ma99` (mean of `ma12`–`ma23`) |
+| `add_source_dim_mhit.py` | Post-processing step 8: adds `source` dimension with change signals |
+| `generate_rasdaman_job.py` | Post-processing step 9: generates SLURM script for Rasdaman prep |
 | `PLAN.md` | Architecture notes and implementation checklist |
 | `.gitignore` | Excludes `slurm/` from version control |
 
