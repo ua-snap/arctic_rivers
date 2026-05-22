@@ -15,7 +15,7 @@ See page 47 of this document for definitions of the hydrologic indices: https://
 A NetCDF file at a path of your choosing (passed as `--output-nc` to `generate_mhit_jobs.py`), then post-processed by steps 7 and 8 below.
 
 Final output dimensions: `source=3`, `era=2`, `model=7`, `stream_id=34346`  
-Variables: 53 float32 statistics (52 MHIT + `ma99`; see `luts_mhit.py` for names, units, descriptions)
+Variables: 53 float32 statistics (40 MHIT-based + 12 custom seasonal + `ma99`; see `luts_mhit.py` for names, units, descriptions)
 
 ---
 

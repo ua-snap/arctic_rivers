@@ -98,7 +98,8 @@ def extract(args):
                     "day":       dates["day"],
                     "discharge": q_series,
                 })
-                # Replace NaN with empty (MHIT handles missing as NaN internally)
+                # Write the extracted series as-is; this code does not explicitly
+                # convert NaN discharge values before exporting the CSV.
                 basename = f"{comid}{SEP}{model}{SEP}{era_label}"
                 csv_path = out_dir / f"{basename}.csv"
                 df.to_csv(csv_path, index=False)
