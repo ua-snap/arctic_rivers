@@ -28,6 +28,7 @@ stat_var_dict = {
         "ma21": {"month": 10, "description": "Mean of monthly flow values for October.", "units": "cfs"},
         "ma22": {"month": 11, "description": "Mean of monthly flow values for November.", "units": "cfs"},
         "ma23": {"month": 12, "description": "Mean of monthly flow values for December.", "units": "cfs"},
+        "ma99": {"month": "all", "description": "Mean of monthly flow values for all months.", "units": "cfs"},
     }
 
 
@@ -43,21 +44,21 @@ data_source_dict = {"Title":"Alaskan river discharge, temperature, and climate d
 # metadata about GCMs
 gcm_metadata_dict = {"historical":
                     {"Modeling Center": "National Center for Atmospheric Research (NCAR)",
-                    "Description": "ERA5 dynamically downscaled to 4km resolution",
-                    "URL": "", #TODO: add URL if available
-                    "Citation": "", #TODO: add Citation if available
+                    "Description": "ERA5 dynamically downscaled to 4km resolution over Alaska and the Yukon River Basin (1990–2021) using the Regional Arctic Systems Model (RASM), with the Community Terrestrial Systems Model (CTSM) as the land component and WRF as the atmospheric component.",
+                    "URL": "https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2024JD041185",
+                    "Citation": "Cheng, Y., Craig, A., Musselman, K., Bennett, A., Seefeldt, M., Hamman, J., & Newman, A. J. (2025). Coupled high-resolution land-atmosphere modeling for hydroclimate and terrestrial hydrology in Alaska and the Yukon River Basin (1990–2021). Journal of Geophysical Research: Atmospheres, 130(1). https://doi.org/10.1029/2024JD041185",
                     },
                     "PGWh":
                     {"Modeling Center": "National Center for Atmospheric Research (NCAR)",
-                    "Description": "", #TODO: add Description
-                    "URL": "", #TODO: add URL if available
-                    "Citation": "", #TODO: add Citation if available
+                    "Description": "High hydroclimate change scenario using the pseudo-global warming (PGW) method at 4km resolution over Alaska and the Yukon River Basin, representing mid-21st century (2035–2065) conditions. Derived from the mean perturbations of the 75th–100th percentile of SSP2-4.5 CMIP6 models.",
+                    "URL": "https://gdex.ucar.edu/datasets/d614000/",
+                    "Citation": "Cheng, Y., Craig, A., Musselman, K., Bennett, A., Seefeldt, M., Hamman, J., & Newman, A. J. (2024). Multi-decadal historical regional hydroclimate simulation with two mid 21st century Pseudo-Global Warming futures over Alaska and the Yukon at 4 km resolution. UCAR/NCAR - GDEX. https://doi.org/10.5065/ZPSB-PS82",
                     },
                     "PGWm":
                     {"Modeling Center": "National Center for Atmospheric Research (NCAR)",
-                    "Description": "", #TODO: add Description
-                    "URL": "", #TODO: add URL if available
-                    "Citation": "", #TODO: add Citation if available
+                    "Description": "Median hydroclimate change scenario using the pseudo-global warming (PGW) method at 4km resolution over Alaska and the Yukon River Basin, representing mid-21st century (2035–2065) conditions. Derived from the mean perturbations of the 25th–75th percentile of SSP2-4.5 CMIP6 models.",
+                    "URL": "https://gdex.ucar.edu/datasets/d614000/",
+                    "Citation": "Cheng, Y., Craig, A., Musselman, K., Bennett, A., Seefeldt, M., Hamman, J., & Newman, A. J. (2024). Multi-decadal historical regional hydroclimate simulation with two mid 21st century Pseudo-Global Warming futures over Alaska and the Yukon at 4 km resolution. UCAR/NCAR - GDEX. https://doi.org/10.5065/ZPSB-PS82",
                     },
                     "C2LE2":
                     {"Modeling Center": "National Center for Atmospheric Research (NCAR)",
