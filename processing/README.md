@@ -55,7 +55,7 @@ sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/daily_climatology.slurm
 
 ## 3. Compute streamflow statistics from combined files
 
-Calculate streamflow stats (monthly means) for each era (1990-2021 and 2034-2065), model, and stream_id from the combined dataset. Not calculated for stream temperature at this time.
+Calculate streamflow stats (monthly means) for each era (1990-2021 and 2034-2065), model, and stream_id from the combined dataset. See section 5 for the analogous stream temperature statistics.
 
 #### Main scripts:
 - [processing/generate_stats_job.py](processing/generate_stats_job.py): writes a `.slurm` file to submit
@@ -79,9 +79,36 @@ python generate_stats_job.py calculate_stats.py /import/beegfs/CMIP6/jdpaul3/arc
 sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/streamflow_stats.slurm
 ```
 
+## 5. Compute stream temperature statistics from combined files
+
+Calculate stream temperature statistics for each era (1990-2021 and 2034-2065), model, and stream_id from the combined WT dataset. Statistics include: mean annual days above 13/18/20°C; monthly min/mean/max temperatures; annual maximum daily temperature (magnitude and Julian day); maximum 7-day rolling average temperature (magnitude and Julian day); and cumulative degree days above 0°C for May–September.
+
+#### Main scripts:
+- [processing/generate_wt_stats_job.py](processing/generate_wt_stats_job.py): writes a `.slurm` file to submit
+- [processing/calculate_wt_stats.py](processing/calculate_wt_stats.py): does the stats calculation work
+
+#### Usage:
+
+```bash
+python generate_wt_stats_job.py <processing_script> <path/to/combined/wt/file> <path/to/output/wt/stats/file> <path/to/slurm/files>
+```
+```bash
+sbatch <path/to/slurm/files>/stream_temp_stats.slurm
+```
+
+Example (use your own directories for outputs):
+
+```bash
+python generate_wt_stats_job.py calculate_wt_stats.py /import/beegfs/CMIP6/jdpaul3/arctic_rivers_data/combined_wt.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers_data/wt_stats.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/
+```
+```bash
+sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/stream_temp_stats.slurm
+```
+
+
 ## 4. Prep for Rasdaman ingestion
 
-Convert string dimensions to integers and add encoding dictionaries to dimension metadata. Convert all variables to `float32` data type. Run twice: once for streamflow statistics and once for streamflow climatology (temperature is not needed for Rasdaman ingest at this time). Change the slurm job name when calling `generate_rasdaman_job.py` in order to create two individually named slurm job scripts to submit. 
+Convert string dimensions to integers and add encoding dictionaries to dimension metadata. Convert all variables to `float32` data type. Run once per output file: streamflow statistics, streamflow climatology, and stream temperature statistics. Change the slurm job name when calling `generate_rasdaman_job.py` in order to create individually named slurm job scripts to submit. 
 
 #### Main scripts:
 - [processing/generate_rasdaman_job.py](processing/generate_rasdaman_job.py): writes a `.slurm` file to submit
@@ -109,6 +136,12 @@ python generate_rasdaman_job.py prep_for_rasdaman.py /import/beegfs/CMIP6/jdpaul
 ```
 ```bash
 sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/rasdaman_daily_clim_prep.slurm
+```
+```bash
+python generate_rasdaman_job.py prep_for_rasdaman.py /import/beegfs/CMIP6/jdpaul3/arctic_rivers_data/wt_stats.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers_data/wt_stats_for_rasdaman.nc /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/ --job-name "rasdaman_wt_stats_prep"
+```
+```bash
+sbatch /import/beegfs/CMIP6/jdpaul3/arctic_rivers/slurm/rasdaman_wt_stats_prep.slurm
 ```
 
 
