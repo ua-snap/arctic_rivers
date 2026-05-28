@@ -58,7 +58,7 @@ def get_annual_max_timing(T_era):
         # Fill all-NaN slices with a sentinel so argmax never errors.
         # The sentinel position is masked out by has_data below.
         T_yr_safe = T_yr.fillna(-9999.0)
-        idx = T_yr_safe.argmax(dim="time")
+        idx = T_yr_safe.argmax(dim="time").compute()
         max_val = T_yr.isel(time=idx).where(has_data)
         max_doy = doy_yr.isel(time=idx).where(has_data).astype(float)
         max_vals.append(max_val.assign_coords(year=yr).expand_dims("year"))
