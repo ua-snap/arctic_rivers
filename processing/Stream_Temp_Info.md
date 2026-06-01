@@ -42,6 +42,11 @@ This dataset was produced using the Regional Arctic System Model (RASM), combini
 
 | Variable | Units | Description |
 |----------|-------|-------------|
+| `wt_ann_max_temp_mean` | °C | Mean (over era years) of the annual maximum daily stream temperature |
+| `wt_ann_max_temp_doy_mean` | day of year | Mean (over era years) Julian day of the annual maximum daily stream temperature |
+| `wt_7d_max_temp_mean` | °C | Mean (over era years) of the annual maximum 7-day rolling average stream temperature |
+| `wt_7d_max_temp_doy_mean` | day of year | Mean (over era years) Julian day of the center of the annual maximum 7-day rolling average |
+| `wt_cdd_may_sept_mean` | °C·days | Mean (over era years) annual cumulative degree days above 0°C, May through September |
 | `wt_days_gt13_mean` | days | Mean annual count of days with stream temperature > 13°C |
 | `wt_days_gt18_mean` | days | Mean annual count of days with stream temperature > 18°C |
 | `wt_days_gt20_mean` | days | Mean annual count of days with stream temperature > 20°C |
@@ -81,10 +86,6 @@ This dataset was produced using the Regional Arctic System Model (RASM), combini
 | `wt_max_oct` | °C | Maximum monthly mean stream temperature for October across all years in era |
 | `wt_max_nov` | °C | Maximum monthly mean stream temperature for November across all years in era |
 | `wt_max_dec` | °C | Maximum monthly mean stream temperature for December across all years in era |
-| `wt_ann_max_temp_mean` | °C | Mean (over era years) of the annual maximum daily stream temperature |
-| `wt_ann_max_temp_doy_mean` | day of year | Mean (over era years) Julian day of the annual maximum daily stream temperature |
-| `wt_7d_max_temp_mean` | °C | Mean (over era years) of the annual maximum 7-day rolling average stream temperature |
-| `wt_7d_max_temp_doy_mean` | day of year | Mean (over era years) Julian day of the center of the annual maximum 7-day rolling average |
-| `wt_cdd_may_sept_mean` | °C·days | Mean (over era years) annual cumulative degree days above 0°C, May through September |
+
 
 > All variables use `NaN` as the fill value for missing data.
