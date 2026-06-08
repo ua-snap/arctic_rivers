@@ -32,7 +32,7 @@ This dataset was produced using the Regional Arctic System Model (RASM), combini
 
 | Model | Modeling Center | Reference |
 |-------|----------------|-----------|
-| `historical` | NCAR | [Cheng et al. 2025, JGR: Atmospheres](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2024JD041185) |
+| `historical` | NCAR | [Cheng et al. 2025, JGR: Atmospheres](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2024JD041185)  &  [Blaskey et al. 2024, WRR](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023WR036217)|
 | `PGWh` / `PGWm` | NCAR | [UCAR/NCAR GDEX, doi:10.5065/ZPSB-PS82](https://gdex.ucar.edu/datasets/d614000/) |
 | `C2LE2`, `C2LE4`, `C2LE7`, `C2LE9` | NCAR | [Rodgers et al. 2021, Earth Syst. Dynam.](https://esd.copernicus.org/articles/12/1393/2021/) |
 
