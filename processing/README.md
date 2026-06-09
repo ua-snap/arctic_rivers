@@ -79,7 +79,7 @@ python generate_stats_job.py calculate_stats.py /import/beegfs/CMIP6/jdpaul3/arc
 sbatch ~/arctic_rivers/slurm/streamflow_stats.slurm
 ```
 
-## 5. Compute stream temperature statistics from combined files
+## 4. Compute stream temperature statistics from combined files
 
 Calculate stream temperature statistics for each era (1990-2021 and 2034-2065), model, and stream_id from the combined WT dataset. Statistics include: mean annual days above 13/18/20°C; monthly min/mean/max temperatures; annual maximum daily temperature (magnitude and Julian day); maximum 7-day rolling average temperature (magnitude and Julian day); and cumulative degree days above 0°C for May–September.
 
@@ -106,7 +106,7 @@ sbatch ~/arctic_rivers/slurm/stream_temp_stats.slurm
 ```
 
 
-## 4. Prep for Rasdaman ingestion
+## 5. Prep for Rasdaman ingestion
 
 Convert string dimensions to integers and add encoding dictionaries to dimension metadata. Convert all variables to `float32` data type. Run once per output file: streamflow statistics, streamflow climatology, and stream temperature statistics. Change the slurm job name when calling `generate_rasdaman_job.py` in order to create individually named slurm job scripts to submit. 
 
