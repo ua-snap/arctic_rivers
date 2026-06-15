@@ -1,5 +1,20 @@
 from luts import data_source_dict, gcm_metadata_dict  # noqa: F401 — re-exported for convenience
 
+wt_clim_var_dict = {
+    "doy_min": {
+        "description": "Minimum daily stream temperature for day of year across all years in era",
+        "units": "degC",
+    },
+    "doy_max": {
+        "description": "Maximum daily stream temperature for day of year across all years in era",
+        "units": "degC",
+    },
+    "doy_mean": {
+        "description": "Mean daily stream temperature for day of year across all years in era",
+        "units": "degC",
+    },
+}
+
 _MONTH_NAMES = ["jan", "feb", "mar", "apr", "may", "jun",
                 "jul", "aug", "sep", "oct", "nov", "dec"]
 _MONTH_LABELS = ["January", "February", "March", "April", "May", "June",
