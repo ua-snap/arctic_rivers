@@ -47,9 +47,9 @@ This dataset was produced using the Regional Arctic System Model (RASM), combini
 | `wt_7d_max_temp_mean` | °C | Mean (over era years) of the annual maximum 7-day rolling average stream temperature |
 | `wt_7d_max_temp_doy_mean` | day of year | Mean (over era years) Julian day of the center of the annual maximum 7-day rolling average |
 | `wt_cdd_may_sept_mean` | °C·days | Mean (over era years) annual cumulative degree days above 0°C, May through September |
-| `wt_days_gt13_mean` | days | Mean annual count of days with stream temperature > 13°C |
-| `wt_days_gt18_mean` | days | Mean annual count of days with stream temperature > 18°C |
-| `wt_days_gt20_mean` | days | Mean annual count of days with stream temperature > 20°C |
+| `wt_days_gt13_mean` | days/yr | Mean annual count of days with stream temperature > 13°C |
+| `wt_days_gt18_mean` | days/yr | Mean annual count of days with stream temperature > 18°C |
+| `wt_days_gt20_mean` | days/yr | Mean annual count of days with stream temperature > 20°C |
 | `wt_mean_jan` | °C | Mean of monthly mean stream temperatures for January |
 | `wt_mean_feb` | °C | Mean of monthly mean stream temperatures for February |
 | `wt_mean_mar` | °C | Mean of monthly mean stream temperatures for March |
