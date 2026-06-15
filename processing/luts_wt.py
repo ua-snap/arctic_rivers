@@ -9,15 +9,15 @@ wt_stat_var_dict = {
     # ── Threshold exceedance ─────────────────────────────────────────────────
     "wt_days_gt13_mean": {
         "description": "Mean annual count of days with stream temperature > 13°C.",
-        "units": "days",
+        "units": "days/yr",
     },
     "wt_days_gt18_mean": {
         "description": "Mean annual count of days with stream temperature > 18°C.",
-        "units": "days",
+        "units": "days/yr",
     },
     "wt_days_gt20_mean": {
         "description": "Mean annual count of days with stream temperature > 20°C.",
-        "units": "days",
+        "units": "days/yr",
     },
     # ── Monthly mean temperature ─────────────────────────────────────────────
     **{
