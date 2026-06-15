@@ -76,13 +76,14 @@ def calculate_statistics(ds):
         results = {}
 
         # ── Threshold exceedance: mean annual count of days above threshold ──
+        has_valid_year = T.notnull().groupby("time.year").any(dim="time")
         for thresh, var_name in [
             (13.0, "wt_days_gt13_mean"),
             (18.0, "wt_days_gt18_mean"),
             (20.0, "wt_days_gt20_mean"),
         ]:
-            annual_count = (T > thresh).where(T.notnull()).groupby("time.year").sum(dim="time", min_count=1)
-            results[var_name] = annual_count.mean(dim="year", skipna=True)
+            annual_count = (T > thresh).groupby("time.year").sum(dim="time")
+            results[var_name] = annual_count.where(has_valid_year).mean(dim="year", skipna=True)
 
         # ── Monthly min/mean/max: mean across all months of each type in era ──
         monthly = T.resample(time="ME").mean()
@@ -115,8 +116,9 @@ def calculate_statistics(ds):
         # ── Cumulative degree days above 0°C, May–September ───────────────────
         may_sept_mask = T.time.dt.month.isin([5, 6, 7, 8, 9]).values
         may_sept_T = T.isel(time=may_sept_mask).clip(min=0)
-        annual_cdd = may_sept_T.groupby("time.year").sum(dim="time", skipna=True, min_count=1)
-        results["wt_cdd_may_sept_mean"] = annual_cdd.mean(dim="year", skipna=True)
+        annual_cdd = may_sept_T.groupby("time.year").sum(dim="time", skipna=True)
+        has_valid_may_sept = may_sept_T.notnull().groupby("time.year").any(dim="time")
+        results["wt_cdd_may_sept_mean"] = annual_cdd.where(has_valid_may_sept).mean(dim="year", skipna=True)
 
         era_results.append((era_name, results))
 
