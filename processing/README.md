@@ -152,7 +152,7 @@ sbatch ~/arctic_rivers/slurm/rasdaman_wt_daily_clim_prep.slurm
 
 
 ## Notes:
-- Each job take 5-15 minutes to run on the `analysis` partition once resources are allocated.
+- Each job takes 5-15 minutes to run on the `analysis` partition once resources are allocated.
 - The SLURM jobs use the `analysis` partition by default, but this can be changed using optional params in the `generate_*.py` scripts.
 - The SLURM jobs assume you have a conda environment named `snap-geo`. Revise `generate_*.py` scripts if you would like to use a different environment. 
 - SLURM logs (`*.out` and `*.err`) are written to the provided `<path/to/slurm/files>` directory. Consult these first when troubleshooting. 
