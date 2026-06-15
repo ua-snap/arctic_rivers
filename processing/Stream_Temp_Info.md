@@ -7,7 +7,7 @@ Rasdaman coverage: `ak_hydro_segments_wt_stats`
 **[Alaskan river discharge, temperature, and climate data for a climate reference (1990-2021) and at mid-century (2034-2065)](https://doi.org/10.18739/A25M62870)**
 *Dylan Blaskey, Keith Musselman, Andrew Newman, and Yifan Cheng — Arctic Data Center, 2024*
 
-This dataset was produced using the Regional Arctic System Model (RASM), combining the Weather Research & Forecasting Model (WRF) and Community Terrestrial Systems Model (CTSM) for climate and land surface processes, mizuRoute for river routing, and the River Basin Model for river temperature. The framework generates high-resolution spatial and temporal data for 49 major Alaskan river basins, comparing historical (1990–2021) and mid-century (2035–2064) conditions across six future scenarios: two pseudo-global warming simulations (SSP2-4.5) and four directly downscaled global climate models (SSP3-7.0).
+This dataset was produced using the Regional Arctic System Model (RASM), combining the Weather Research & Forecasting Model (WRF) and Community Terrestrial Systems Model (CTSM) for climate and land surface processes, mizuRoute for river routing, and the River Basin Model for river temperature. The framework generates high-resolution spatial and temporal data for 49 major Alaskan river basins, comparing historical (1990–2021) and mid-century (2034–2065) conditions across six future scenarios: two pseudo-global warming simulations (SSP2-4.5) and four directly downscaled global climate models (SSP3-7.0).
 
 ---
 
