@@ -4,6 +4,7 @@ import numpy as np
 import xarray as xr
 import dask
 from luts import clim_var_dict, data_source_dict, gcm_metadata_dict
+from luts_wt import wt_clim_var_dict
 
 
 try:
@@ -82,12 +83,12 @@ def calculate_daily_climatology(ds):
     return result
 
 
-def add_metadata(ds):
-    for var_name, info in clim_var_dict.items():
+def add_metadata(ds, var_dict):
+    for var_name, info in var_dict.items():
         if var_name in ds:
             ds[var_name].attrs["description"] = info["description"]
             ds[var_name].attrs["units"] = info["units"]
-    # these must be strings to be netCDF serializable        
+    # these must be strings to be netCDF serializable
     ds.attrs["Data_Source"] = str(data_source_dict)
     ds.attrs["GCM_Metadata"] = str(gcm_metadata_dict)
     return ds
@@ -112,8 +113,8 @@ def main():
     q_daily_clim = calculate_daily_climatology(q_ds)
 
     print("Adding metadata...")
-    wt_daily_clim = add_metadata(wt_daily_clim)
-    q_daily_clim = add_metadata(q_daily_clim)
+    wt_daily_clim = add_metadata(wt_daily_clim, wt_clim_var_dict)
+    q_daily_clim = add_metadata(q_daily_clim, clim_var_dict)
 
     wt_daily_clim.to_netcdf(args.wt_output)
     print("WT daily climatology saved to", args.wt_output)
