@@ -16,6 +16,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter, NullFormatter
 
 RAW_Q = "/beegfs/CMIP6/jdpaul3/arctic_rivers_data/combined_q.nc"
 RAW_WT = "/beegfs/CMIP6/jdpaul3/arctic_rivers_data/combined_wt.nc"
@@ -97,6 +98,20 @@ def build_panel(ds):
     }
 
 
+def format_log_tick(value, _pos=None):
+    """Render log-axis ticks as plain numbers (1, 10, 1000) with k/M/B suffixes
+    above 10,000, matching the front-end app's axis style instead of 10^n."""
+    if value <= 0:
+        return ""
+    if value >= 10_000:
+        for divisor, suffix in ((1e9, "B"), (1e6, "M"), (1e3, "k")):
+            if value >= divisor:
+                return f"{value / divisor:g}{suffix}"
+    if value == int(value):
+        return f"{int(value)}"
+    return f"{value:g}"
+
+
 def water_year_order(doy_values):
     """Index order that rotates calendar day-of-year so Oct 1 plots first and Sep 30 last."""
     water_year_start_doy = datetime.date(2001, 10, 1).timetuple().tm_yday
@@ -137,6 +152,8 @@ def plot_panel(ax, panel, cfg, title):
 
     if cfg["log_scale"]:
         ax.set_yscale("log")
+        ax.yaxis.set_major_formatter(FuncFormatter(format_log_tick))
+        ax.yaxis.set_minor_formatter(NullFormatter())
 
     ticks, labels = month_ticks(doy_ordered)
     ax.set_xticks(ticks)
