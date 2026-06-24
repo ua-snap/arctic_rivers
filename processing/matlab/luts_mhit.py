@@ -79,8 +79,8 @@ GCM_METADATA_DICT = {
     "historical": {
         "Modeling Center": "National Center for Atmospheric Research (NCAR)",
         "Description": "ERA5 dynamically downscaled to 4km resolution over Alaska and the Yukon River Basin (1990-2021) using the Regional Arctic Systems Model (RASM), with the Community Terrestrial Systems Model (CTSM) as the land component and WRF as the atmospheric component.",
-        "URL": "https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2024JD041185",
-        "Citation": "Cheng, Y., Craig, A., Musselman, K., Bennett, A., Seefeldt, M., Hamman, J., & Newman, A. J. (2025). Coupled high-resolution land-atmosphere modeling for hydroclimate and terrestrial hydrology in Alaska and the Yukon River Basin (1990-2021). Journal of Geophysical Research: Atmospheres, 130(1). https://doi.org/10.1029/2024JD041185",
+        "URL": "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023WR036217",
+        "Citation": "Blaskey, D., Gooseff, M., Cheng, Y., Newman, A., Koch, J. C., & Musselman, K. (2024). A high-resolution, daily hindcast (1990-2021) of Alaskan river discharge and temperature from coupled and optimized physical models. Water Resources Research, 60(4), e2023WR036217. https://doi.org/10.1029/2023WR036217",
     },
     "PGWh": {
         "Modeling Center": "National Center for Atmospheric Research (NCAR)",

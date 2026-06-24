@@ -4,6 +4,8 @@
 
 Combine all NetCDFs from the Arctic Rivers dataset into two outputs: one for daily stream temperature (`WT`), and one for daily streamflow (`Q`). Streamflow is converted from cubic meters per second (cms) to cubic feet per second (cfs) to match other hydrology coverages. Source data lives here at `/import/beegfs/CMIP6/arctic-cmip6/Arctic_Rivers_Data`
 
+Streamflow (`Q`) also has the first 60 days of each model run replaced with `NaN` (see `mask_spinup()` in `combine_arctic_rivers.py`) to remove a model cold-start artifact — timesteps are preserved, only the values are masked. This does not apply to `WT`. Pass `--skip-wt` to `combine_arctic_rivers.py` (or `generate_combine_job.py`) to only (re)build `Q` without the much more expensive `WT` combination.
+
 #### Main scripts:
 - [processing/generate_combine_job.py](processing/generate_combine_job.py): writes a `.slurm` file to submit
 - [processing/combine_arctic_rivers.py](processing/combine_arctic_rivers.py): does the combination work

@@ -151,7 +151,7 @@ def calculate_statistics(ds):
 def add_source_dimension(result_ds):
     excluded_models = ["historical", "PGWh", "PGWm"]
     source_index = pd.Index(
-        ["original_gcm", "gcm_diff", "gcm_diff_applied_to_cheng"], name="source"
+        ["original_gcm", "gcm_diff", "gcm_diff_applied_to_blaskey"], name="source"
     )
 
     new_vars = {}
@@ -169,7 +169,7 @@ def add_source_dimension(result_ds):
             dim=pd.Index(["1990-2021", "2034-2065"], name="era"),
         )
 
-        # gcm_diff_applied_to_cheng: apply each GCM's delta to the historical baseline
+        # gcm_diff_applied_to_blaskey: apply each GCM's delta to the historical baseline
         hist_baseline = da.sel(era="1990-2021", model="historical")  # (stream_id,)
         future_applied = diff + hist_baseline   # NaN for excluded models via diff
         is_historical  = past["model"] == "historical"
