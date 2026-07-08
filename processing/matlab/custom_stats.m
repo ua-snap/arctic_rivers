@@ -75,7 +75,7 @@ function stats = custom_stats(discharge, yr, mo, dy, da_mi2)
     % ~isnan() means "is NOT NaN" — equivalent to ~np.isnan() in Python.
     % This block only runs if drainage area was provided.
     if ~isnan(da_mi2) && da_mi2 > 0
-        threshold = 0.1 * da_mi2;  % convert 0.1 cfs/mi² to absolute cfs for this gauge
+        threshold = 0.1 * da_mi2;  % convert 0.1 cfs/mi² to absolute cfs for this gage
 
         % zeros(nyrs, 1) creates a column array of zeros, length nyrs.
         % Python equivalent: np.zeros(nyrs)
@@ -240,7 +240,7 @@ function stats = custom_stats(discharge, yr, mo, dy, da_mi2)
     % =======================================================================
     % STATS 8 & 10: SPR_MAG and SUM_MAG — Drainage-area-normalized magnitude
     % The raw peak (spring) or trough (summer) flow divided by drainage area,
-    % giving units of cfs/mi². This makes gauges comparable across basin sizes.
+    % giving units of cfs/mi². This makes gages comparable across basin sizes.
     % =======================================================================
     if ~isnan(da_mi2) && da_mi2 > 0
         spr_max_vals = NaN(nyrs, 1);

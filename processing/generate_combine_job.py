@@ -30,24 +30,25 @@ def main():
     parser.add_argument("--threads-per-worker", type=int, default=4)
     parser.add_argument("--chunk-time", type=int, default=365, help="Optional chunk size for time dimension")
     parser.add_argument("--time", default="12:00:00")
+    parser.add_argument("--skip-wt", action="store_true", help="Only (re)build Q; wt_output_nc is still required positionally but ignored")
     args = parser.parse_args()
 
     slurm_dir = Path(args.slurm_dir)
     slurm_dir.mkdir(parents=True, exist_ok=True)
     slurm_path = slurm_dir / f"{args.job_name}.slurm"
 
-    wt_output_dir = Path(args.wt_output_nc).parent
-    wt_output_dir.mkdir(parents=True, exist_ok=True)
-
     q_output_dir = Path(args.q_output_nc).parent
     q_output_dir.mkdir(parents=True, exist_ok=True)
 
-
     # Build combine command
-    combine_cmd = (
-        f"python {args.combine_script} --data-dir {args.data_dir} --wt-output {args.wt_output_nc} --q-output {args.q_output_nc} "
-        f"--workers {args.workers} --threads-per-worker {args.threads_per_worker}"
-    )
+    combine_cmd = f"python {args.combine_script} --data-dir {args.data_dir} --q-output {args.q_output_nc} "
+    if args.skip_wt:
+        combine_cmd += "--skip-wt "
+    else:
+        wt_output_dir = Path(args.wt_output_nc).parent
+        wt_output_dir.mkdir(parents=True, exist_ok=True)
+        combine_cmd += f"--wt-output {args.wt_output_nc} "
+    combine_cmd += f"--workers {args.workers} --threads-per-worker {args.threads_per_worker}"
     if args.chunk_time > 0:
         combine_cmd += f" --chunk-time {args.chunk_time}"
 

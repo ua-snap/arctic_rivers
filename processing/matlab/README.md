@@ -150,9 +150,9 @@ The three source values are:
 |--------|-------------|
 | `original_gcm` | The 53 statistics as-is from steps 6–7 |
 | `gcm_diff` | Change signal between C2LE models' future and historical eras (ratio for flow/duration/rate stats; absolute difference for timing/frequency stats) |
-| `gcm_diff_applied_to_cheng` | `gcm_diff` applied to the `historical` model 1990–2021 baseline (Cheng)|
+| `gcm_diff_applied_to_blaskey` | `gcm_diff` applied to the `historical` model 1990–2021 baseline (Blaskey)|
 
-`historical`, `PGWh`, and `PGWm` are excluded from `gcm_diff` and `gcm_diff_applied_to_cheng` (no paired future/historical run).
+`historical`, `PGWh`, and `PGWm` are excluded from `gcm_diff` and `gcm_diff_applied_to_blaskey` (no paired future/historical run).
 
 ```bash
 conda activate snap-geo

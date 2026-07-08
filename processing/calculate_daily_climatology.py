@@ -115,6 +115,8 @@ def main():
     print("Adding metadata...")
     wt_daily_clim = add_metadata(wt_daily_clim, wt_clim_var_dict)
     q_daily_clim = add_metadata(q_daily_clim, clim_var_dict)
+    if "Spinup_Masking" in q_ds.attrs:
+        q_daily_clim.attrs["Spinup_Masking"] = q_ds.attrs["Spinup_Masking"]
 
     wt_daily_clim.to_netcdf(args.wt_output)
     print("WT daily climatology saved to", args.wt_output)

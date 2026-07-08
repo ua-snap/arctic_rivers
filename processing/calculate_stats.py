@@ -84,7 +84,7 @@ def calculate_statistics(ds):
 
 def add_source_dimension(result_ds):
     excluded_models = ['historical', 'PGWh', 'PGWm']
-    source_index = pd.Index(['original_gcm', 'gcm_diff', 'gcm_diff_applied_to_cheng'], name='source')
+    source_index = pd.Index(['original_gcm', 'gcm_diff', 'gcm_diff_applied_to_blaskey'], name='source')
 
     new_vars = {}
     for var_name in stat_var_dict.keys():
@@ -101,7 +101,7 @@ def add_source_dimension(result_ds):
             dim=pd.Index(['1990-2021', '2034-2065'], name='era'),
         )
 
-        # gcm_diff_applied_to_cheng
+        # gcm_diff_applied_to_blaskey
         hist_baseline = da.sel(era='1990-2021', model='historical')  # dims: (stream_id,)
         future_applied = ratio * hist_baseline  # historical row stays NaN via ratio
         is_historical = past['model'] == 'historical'
@@ -147,6 +147,8 @@ def main():
 
     print("Adding metadata...")
     q_stats = add_metadata(q_stats)
+    if "Spinup_Masking" in q_ds.attrs:
+        q_stats.attrs["Spinup_Masking"] = q_ds.attrs["Spinup_Masking"]
 
     print("Saving Q statistics to NetCDF...")
     q_stats.to_netcdf(args.q_output)

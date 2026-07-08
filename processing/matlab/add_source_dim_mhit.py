@@ -2,7 +2,7 @@
 """Add source dimension to mhit_indices.nc.
 
 Transforms (era, model, stream_id) → (source, era, model, stream_id) with three
-source values: original_gcm, gcm_diff, gcm_diff_applied_to_cheng.
+source values: original_gcm, gcm_diff, gcm_diff_applied_to_blaskey.
 
 Usage:
   cd /import/home/jdpaul3/arctic_rivers/processing/matlab
@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from luts_mhit import DATA_SOURCE_DICT, GCM_METADATA_DICT, MHIT_STATS
 
 EXCLUDED_MODELS = ["historical", "PGWh", "PGWm"]
-SOURCE_INDEX = pd.Index(["original_gcm", "gcm_diff", "gcm_diff_applied_to_cheng"], name="source")
+SOURCE_INDEX = pd.Index(["original_gcm", "gcm_diff", "gcm_diff_applied_to_blaskey"], name="source")
 
 
 def parse_args():
@@ -50,7 +50,7 @@ def build_sourced_variable(da: xr.DataArray, difference_method: str) -> xr.DataA
         dim=pd.Index(["1990-2021", "2034-2065"], name="era"),
     )
 
-    # source=gcm_diff_applied_to_cheng
+    # source=gcm_diff_applied_to_blaskey
     hist_baseline = da.sel(era="1990-2021", model="historical")  # (stream_id,)
 
     if difference_method == "ratio":
